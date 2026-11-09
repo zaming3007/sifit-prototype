@@ -1,0 +1,20 @@
+.payment-panel { padding: 24px; border: 1px solid #d5e3c9; background: #f7faf1; border-radius: 12px; display: grid; gap: 16px; min-width: 0; }
+.payment-panel p { font-size: 12px; line-height: 1.9; margin: 0; }
+.payment-panel h3 { margin: 4px 0 12px; font-size: 19px; color: #294b35; }
+.payment-eyebrow { font-size: 9px !important; letter-spacing: .15em; color: #798d66; }
+.payment-amount { font-size: 26px; color: #205c3c; }
+.payment-qr-layout { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+.payment-qr-layout svg { max-width: 100%; flex-shrink: 0; border-radius: 6px; }
+.payment-qr-layout dl { display: grid; gap: 13px; font-size: 12px; min-width: 0; }
+.payment-qr-layout dt { font-size: 10px; color: #869574; margin-bottom: 4px; }
+.payment-qr-layout dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.payment-panel a { color: #245c3b; font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
+.payment-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.payment-actions button { border: 1px solid #c9d8bb; background: #fff; color: #355a33; padding: 10px 14px; border-radius: 6px; font-size: 11px; }
+.payment-warning { color: #936b30; background: #fff3db; padding: 12px; border-radius: 6px; }
+.workflow-form { display: grid; gap: 16px; padding-top: 18px; min-width: 0; }
+.workflow-form p { font-size: 12px; line-height: 1.9; }
+.workflow-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.workflow-form .input-field { width: 100%; min-width: 0; }
+.workflow-form button { justify-self: start; }
+@media (max-width: 600px) { .payment-panel { padding: 18px; } .payment-qr-layout { justify-content: center; gap: 18px; } .payment-qr-layout dl { width: 100%; } .workflow-grid { grid-template-columns: minmax(0, 1fr); } }

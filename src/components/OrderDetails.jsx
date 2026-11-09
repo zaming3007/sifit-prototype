@@ -25,6 +25,7 @@ export default function OrderDetails({ order, now }) {
     </div>}
     {order.deliveredAt && <p>Đã xác nhận giao hàng: <Timestamp value={order.deliveredAt} /></p>}
     {order.buyerConfirmedAt && <p>Bạn đã xác nhận nhận hàng: <Timestamp value={order.buyerConfirmedAt} /></p>}
+    {order.buyerConfirmedAt && order.orderStatus === 'DELIVERED' && <p>Đã nhận hàng · Chờ admin kiểm tra hoàn tất.</p>}
     {order.protectionEndsAt ? <div>
       <p>Hạn bảo vệ người mua: <Timestamp value={order.protectionEndsAt} /></p>
       <p>{timeRemaining(order.protectionEndsAt, now)}</p>

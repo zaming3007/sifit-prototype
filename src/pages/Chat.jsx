@@ -21,7 +21,7 @@ const isCurrentUser = (sender, currentUser) => {
 };
 
 export default function Chat() {
-  const { chats, messages, activeChatId, setActiveChatId, user, sendMessage, setSelectedProduct, setCurrentView, loadOlderMessages, hasOlderMessages, fetchChats } = useApp();
+  const { chats, messages, activeChatId, setActiveChatId, user, sendMessage, openProduct, loadOlderMessages, hasOlderMessages, fetchChats } = useApp();
   const [input, setInput] = useState('');
   const { busy, error, run } = useAction();
   const [reportId, setReportId] = useState(null);
@@ -123,7 +123,7 @@ export default function Chat() {
                   <p className="text-[11px] text-primary font-black uppercase tracking-widest">Đang chat với {otherUser?.name}</p>
                 </div>
               </div>
-              <button onClick={() => { setSelectedProduct(activeChat.listing); setCurrentView('detail'); }} className="text-primary bg-primary/10 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-primary/20 transition-colors cursor-pointer border-none">
+              <button onClick={() => openProduct(activeChat.listing)} className="text-primary bg-primary/10 px-4 py-1.5 rounded-full text-xs font-bold hover:bg-primary/20 transition-colors cursor-pointer border-none">
                 Xem Sản Phẩm
               </button>
               <button disabled={busy || blockPending || !!blockState.error} onClick={() => setConfirmBlock(true)}>{blocked ? 'Bỏ chặn người dùng' : 'Chặn người dùng'}</button>

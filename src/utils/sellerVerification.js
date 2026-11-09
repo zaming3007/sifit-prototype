@@ -1,0 +1,3 @@
+export const verificationLabels = { DRAFT: 'Bản nháp', NOT_SUBMITTED: 'Chưa gửi hồ sơ', PENDING: 'Chờ admin kiểm tra', VERIFIED: 'Đã xác minh', REJECTED: 'Cần bổ sung hồ sơ' };
+export const documentLabels = { OWNER_IDENTITY: 'Ảnh xác minh chủ shop', BANK_OWNERSHIP: 'Ảnh sở hữu tài khoản ngân hàng' };
+export const verificationHistoryLabels = { DRAFT_CREATED: 'Đã tạo bản nháp', DRAFT_UPDATED: 'Đã cập nhật thông tin', DOCUMENT_UPLOADED: 'Đã tải ảnh', DOCUMENT_REMOVED: 'Đã xóa ảnh', SUBMITTED: 'Đã gửi duyệt', VERIFIED: 'Admin đã duyệt', REJECTED: 'Admin yêu cầu bổ sung', BANK_CHANGED: 'Đã đổi tài khoản nhận tiền' };

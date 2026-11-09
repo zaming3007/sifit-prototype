@@ -40,11 +40,12 @@ export const normalizeOrder = order => {
   };
 };
 
-export async function createOrder({ shippingAddress, notes, idempotencyKey }) {
+export async function createOrder({ shippingAddress, notes, idempotencyKey, offerIds }) {
   const response = await apiClient.post(API_ENDPOINTS.orders.root, {
     shippingAddress,
     notes,
     idempotencyKey,
+    offerIds,
   });
   return response.data?.data?.checkout;
 }

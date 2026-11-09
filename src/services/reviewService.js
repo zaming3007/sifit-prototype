@@ -53,8 +53,8 @@ export async function createSellerRating(data) {
   return (await apiClient.post(API_ENDPOINTS.reviews.sellers, data)).data.data.rating;
 }
 
-export async function listShopRatings(slug, params = {}) {
-  const data = (await apiClient.get(API_ENDPOINTS.reviews.shopRatings(slug), { params })).data.data;
+export async function listShopRatings(slug, params = {}, signal) {
+  const data = (await apiClient.get(API_ENDPOINTS.reviews.shopRatings(slug), { params, signal })).data.data;
   return { ...data, items: data.items.map(normalizeReview) };
 }
 

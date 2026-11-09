@@ -1,0 +1,30 @@
+.shop-follow-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 22px; padding: 20px 0; border-block: 1px solid #e0e7d7; }
+.shop-follower-count { font-size: 12px; color: #718165; }
+.shop-follow-button { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; color: #fff; background: #28573b; border: 1px solid #28573b; border-radius: 6px; font-size: 12px; min-height: 44px; }
+.shop-follow-button.is-following { background: #eef4e7; color: #426239; border-color: #d1dec5; }
+.shop-follow-button:disabled { opacity: .5; cursor: not-allowed; }
+.shop-follow-notifications { display: flex; align-items: center; gap: 9px; font-size: 11px; color: #6e7d61; line-height: 1.8; }
+.shop-follow-notifications input { width: 16px; height: 16px; accent-color: #376b45; flex-shrink: 0; }
+.shop-follow-notice { width: 100%; margin: 0; font-size: 11px; color: #38633b; }
+.following-page { display: grid; gap: 22px; }
+.following-page .member-heading { margin-bottom: 0; }
+.following-shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.following-shop-card { min-width: 0; background: #fff; border: 1px solid #dde6d6; border-radius: 12px; padding: 26px; display: grid; gap: 18px; }
+.following-shop-card-top { display: flex; align-items: center; gap: 14px; }
+.following-shop-card-top > img, .following-shop-avatar { width: 58px; height: 58px; object-fit: cover; border-radius: 50%; background: #eff3e9; display: grid; place-items: center; color: #6d8559; flex-shrink: 0; }
+.following-shop-card-top > div { min-width: 0; }
+.following-shop-card h2 { font-size: 16px; font-weight: 600; color: #34583b; margin: 0 0 6px; overflow-wrap: anywhere; }
+.following-shop-card-top p { margin: 0; font-size: 10px; color: #8a977c; }
+.following-shop-description { font-size: 12px; line-height: 1.9; color: #7a886e; margin: 0; overflow-wrap: anywhere; }
+.following-shop-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.following-shop-actions button { display: inline-flex; align-items: center; gap: 8px; }
+.following-shop-actions button:disabled { opacity: .5; cursor: not-allowed; }
+.following-product { min-width: 0; }
+.following-shop-link { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #768566; padding-block: 10px; text-align: left; }
+.following-shop-link .sifit-icon { width: 13px; height: 13px; }
+.following-empty { display: grid; justify-items: center; gap: 14px; text-align: center; padding: 45px 22px; border: 1px dashed #d6e1ca; border-radius: 12px; background: #f8faf3; }
+.following-empty > .sifit-icon { font-size: 34px; color: #8ea376; }
+.following-empty h2 { font-size: 18px; color: #3b5a3d; margin: 0; }
+.following-empty p { max-width: 450px; font-size: 12px; line-height: 1.9; color: #7f8d74; margin: 0; }
+.following-notice { font-size: 12px; padding: 12px 16px; border-radius: 6px; background: #eff5e8; color: #41643b; }
+@media (max-width: 650px) { .following-shop-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; } .following-shop-card { padding: 20px; } .shop-follow-controls { gap: 14px; } .shop-follow-notifications { width: 100%; } .following-page .ops-pager { flex-wrap: wrap; gap: 14px; } }

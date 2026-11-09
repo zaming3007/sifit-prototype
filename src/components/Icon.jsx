@@ -1,5 +1,6 @@
 // Core navigation icons render locally, even when external font CDNs are unavailable.
 const paths = {
+  add: 'M12 4v16M4 12h16',
   dashboard: 'M3 3h7v7H3V3Zm11 0h7v7h-7V3ZM3 14h7v7H3v-7Zm11 0h7v7h-7v-7Z',
   inventory_2: 'M3 3h18v5H3V3Zm2 5v13h14V8M9 12h6',
   add_box: 'M3 3h18v18H3V3Zm9 4v10M7 12h10',
@@ -39,6 +40,7 @@ const paths = {
   language: 'M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0ZM3 12h18M12 3a17 17 0 0 1 0 18 17 17 0 0 1 0-18Z',
   image: 'M3 3h18v18H3V3ZM3 17l6-6 4 4 3-3 5 5M16 7h.01',
   close: 'M6 6l12 12M6 18 18 6',
+  flag: 'M5 21V3m0 1c5-3 9 3 14 0v10c-5 3-9-3-14 0',
   menu: 'M3 6h18M3 12h18M3 18h18',
   chevron_right: 'm9 6 6 6-6 6',
   star: 'm12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z',

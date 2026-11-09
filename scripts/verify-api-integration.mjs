@@ -11,7 +11,7 @@ import { createServer } from 'vite';
 const backend = process.env.SIFIT_BACKEND_DIR || 'C:/Sifit-backend';
 const requireBackend = createRequire(pathToFileURL(path.join(backend, 'package.json')));
 Object.assign(process.env, {
-  NODE_ENV: 'test', FRONTEND_URL: 'http://localhost:5187', SOCKET_CORS_ORIGIN: 'http://localhost:5187',
+  NODE_ENV: 'test', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'simulator', PAYOUT_MODE: 'simulation', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '', FRONTEND_URL: 'http://localhost:5187', SOCKET_CORS_ORIGIN: 'http://localhost:5187',
   SOCKET_IO_ENABLED: 'true', JWT_ACCESS_SECRET: 'integration-access-secret-32-characters',
   JWT_REFRESH_SECRET: 'integration-refresh-secret-32-characters', PAYMENT_WEBHOOK_SECRET: 'integration-payment-secret-32-characters',
   SHIPPING_WEBHOOK_SECRET: 'integration-shipping-secret-32-characters', COMMISSION_RATE: '10',
@@ -59,7 +59,7 @@ try {
   const { apiLimiter } = requireBackend('./src/middlewares/rateLimit.middleware');
   // Separate browser scenarios share one loopback IP; give each a fresh rate
   // budget without changing the production middleware or its configuration.
-  const resetRateBudget = () => apiLimiter.resetKey('127.0.0.1');
+  const resetRateBudget = () => { if (process.env.SIFIT_TEST_KEEP_RATE_COUNTERS !== 'true') apiLimiter.resetKey('127.0.0.1'); };
   const socket = requireBackend('./src/socket');
   const User = requireBackend('./src/models/user.model');
   const Product = requireBackend('./src/models/product.model');
@@ -256,7 +256,7 @@ try {
   await expect(buy.getByRole('heading', { name: 'Integration Shop', exact: true })).toBeVisible();
   await buy.goto(`${base}/?view=catalog`);
   await buy.getByRole('button', { name: 'Integration Jacket 1', exact: true }).click();
-  await buy.getByRole('button', { name: 'Mặc Cả', exact: true }).click();
+  await buy.getByRole('button', { name: 'Nhắn tin cho shop', exact: true }).click();
   await buy.getByPlaceholder('Nhập tin nhắn...').fill('Real API buyer message');
   await buy.getByPlaceholder('Nhập tin nhắn...').press('Enter');
   await expect(buy.getByText('Real API buyer message', { exact: true }).last()).toBeVisible();
@@ -319,7 +319,7 @@ try {
   await captureMember(buy, 'member-orders');
   await expect(buy.getByText('Tổng thanh toán: 100.000', { exact: false })).toBeVisible();
   await buy.getByRole('button', { name: 'Thanh toán', exact: true }).first().click();
-  await expect(buy.getByText('Yêu cầu thanh toán:', { exact: false })).toBeVisible();
+  await expect(buy.locator('.payment-panel').first()).toBeVisible();
   expect(await Payment.countDocuments({ status: 'PENDING' })).toBe(1);
   expect(await Order.countDocuments({ orderStatus: 'PENDING_PAYMENT' })).toBe(2);
   await buy.reload();
@@ -440,6 +440,8 @@ try {
   await expect.poll(async () => (await Dispute.findOne({ description: 'Integration dispute description' })).status).toBe('RESOLVED_SELLER');
   const delivery = requireBackend('./src/services/delivery.service');
   await delivery.completeEligibleOrders({ now: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000) });
+  expect((await Order.findById(sellerOrder.id)).orderStatus).toBe('DELIVERED');
+  await requireBackend('./src/services/marketplaceWorkflow.service').completeOrder(admin, sellerOrder.id, { note: 'Integration admin reviewed delivery and buyer confirmation', allowUnconfirmed: false });
   await buy.getByRole('button', { name: 'Làm mới đơn mua', exact: true }).click();
   await buyerCard.getByRole('button', { name: 'Đánh giá', exact: true }).click();
   await buyerCard.getByPlaceholder('Nhận xét').fill('Integration verified review');
@@ -664,17 +666,24 @@ try {
   console.log('PASS analytics by period, CSV downloads, audit details and author-removed moderation guards');
   resetRateBudget();
   await sell.getByRole('button', { name: 'Hồ sơ shop', exact: true }).click();
-  await sell.getByRole('button', { name: 'Gửi yêu cầu xác minh shop', exact: true }).click();
+  await call(sell, 'put', '/seller/bank-account', { bankName: 'BIDV', bankBin: '970418', accountNumber: '123456789', accountName: 'INTEGRATION SELLER' });
+  const verificationDraft = (await call(sell, 'post', '/seller/verification/draft', { legalName: 'Integration Seller', phone: '0901234567', contactAddress: '123 Integration Street' })).data.verification;
+  const verificationService = requireBackend('./src/services/sellerVerification.service');
+  for (const kind of ['OWNER_IDENTITY', 'BANK_OWNERSHIP']) await verificationService.uploadDocument(seller, verificationDraft._id, kind, { buffer: png, size: png.length });
+  const verificationVersion = (await requireBackend('./src/models/sellerVerification.model').findById(verificationDraft._id)).contentVersion;
+  await call(sell, 'post', '/seller/verification/submit', { verificationId: verificationDraft._id, expectedVersion: verificationVersion, consent: true, ownsAccount: true });
   const SellerVerification = requireBackend('./src/models/sellerVerification.model');
   await expect.poll(async () => SellerVerification.countDocuments({ verificationStatus: 'PENDING' })).toBe(1);
   await adminPage.getByRole('button', { name: 'Xác minh shop', exact: true }).click();
-  const verificationPanel = adminPage.locator('section').filter({ has: adminPage.getByRole('heading', { name: 'Integration Shop', exact: true }) });
-  await verificationPanel.getByPlaceholder('Lý do / ghi chú xử lý').fill('Please update contact details');
-  await verificationPanel.getByRole('button', { name: 'Từ chối', exact: true }).click();
+  await adminPage.getByRole('button', { name: 'Kiểm tra hồ sơ xác minh', exact: true }).click();
+  const verificationPanel = adminPage.getByRole('dialog', { name: 'Kiểm tra xác minh shop', exact: true });
+  await verificationPanel.getByLabel('Căn cứ duyệt hoặc yêu cầu bổ sung').fill('Please update contact details');
+  await verificationPanel.getByRole('button', { name: 'Yêu cầu bổ sung hồ sơ', exact: true }).click();
   await expect.poll(async () => (await SellerProfile.findOne({ userId: seller._id })).verificationStatus).toBe('REJECTED');
   await sell.reload();
   await sell.getByRole('button', { name: 'Hồ sơ shop', exact: true }).click();
-  await expect(sell.getByText('Lý do từ chối: Please update contact details', { exact: true })).toBeVisible();
+  await expect(sell.getByText('Lý do cần bổ sung: Please update contact details', { exact: true })).toBeVisible();
+  await verificationPanel.getByRole('button', { name: 'Đóng cửa sổ', exact: true }).click();
   const privateDraft = (await call(sell, 'post', '/products', { title: 'Private notification draft', description: 'Private draft description', categoryId: category.id, price: 100000, size: 'M', condition: 'GOOD' })).data.product;
   expect((await call(buy, 'get', `/seller/products/${privateDraft._id}`)).status).toBe(403);
   expect((await call(sell, 'get', `/seller/products/${products[1].id}`)).status).toBe(404);
@@ -715,6 +724,18 @@ try {
     await context.close();
   }
   console.log('PASS buyer and seller registration persists selected roles and opens the correct interface');
+  await sell.goto(`${base}/?view=chat`);
+  await expect.poll(() => socket.getIo().sockets.adapter.rooms.get(`user:${seller.id}`)?.size || 0).toBeGreaterThan(0);
+  expect((await call(adminPage, 'patch', `/admin/users/${seller.id}/status`, { status: 'SUSPENDED', reason: 'Verify active browser session is disconnected' })).status).toBe(200);
+  await expect(sell.locator('.seller-shell')).toHaveCount(0);
+  await expect.poll(() => sell.evaluate(async () => (await import('/src/services/apiClient.js')).getAccessToken())).toBe(null);
+  expect((await call(adminPage, 'patch', `/admin/users/${seller.id}/status`, { status: 'ACTIVE', reason: 'Restore after suspension browser regression' })).status).toBe(200);
+  await sell.goto(`${base}/?view=auth`);
+  await sell.getByLabel('Email', { exact: true }).fill(seller.email);
+  await sell.getByLabel('Mật khẩu', { exact: true }).fill(password);
+  await sell.locator('.auth-submit').click();
+  await expect(sell.locator('.seller-shell')).toBeVisible();
+  console.log('PASS suspension closes the active browser session and restored sellers can sign in again');
   await fs.mkdir('artifacts/integration', { recursive: true });
   for (const [name, page] of Object.entries(pages)) await page.screenshot({ path: `artifacts/integration/${name}.png`, fullPage: true });
   expect(errors).toEqual([]);

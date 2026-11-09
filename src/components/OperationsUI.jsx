@@ -18,4 +18,5 @@ export function PayoutDetails({ payout, openResource }) { return <><Facts entrie
   ['Mã chi trả', idOf(payout)], ['Số tiền', money(payout.amount)], ['Trạng thái', <Status key="status" value={payout.status} />],
   ['Nhà cung cấp', payout.provider], ['Mã giao dịch', payout.providerPayoutId], ['Ngày tạo', date(payout.createdAt)], ['Ngày duyệt', date(payout.approvedAt)],
   ['Ngày xử lý', date(payout.processedAt)], ['Ngày hoàn tất', date(payout.completedAt)], ['Lý do thất bại', payout.failureReason],
+  ['Ngân hàng nhận', payout.bankSnapshot?.bankName], ['Số tài khoản nhận', payout.bankSnapshot?.accountNumber], ['Chủ tài khoản', payout.bankSnapshot?.accountName], ['Mã chuyển khoản', payout.transferReference], ['Ghi chú đối chiếu', payout.transferNote],
 ]} /><p>Đơn hàng trong đợt chi trả:</p><div className="ops-actions">{(payout.orderIds || []).map(order => <button key={idOf(order)} onClick={() => openResource('ORDER', idOf(order))}>{shortId(order)}</button>)}</div>{payout.provider === 'simulator' && <p className="ops-note">Chi trả đang ở chế độ mô phỏng.</p>}</>; }

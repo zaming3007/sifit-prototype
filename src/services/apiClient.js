@@ -61,6 +61,7 @@ apiClient.interceptors.response.use(
     const url = originalRequest?.url || '';
     const isAuthRequest = [
       API_ENDPOINTS.auth.login,
+      API_ENDPOINTS.auth.google,
       API_ENDPOINTS.auth.register,
       API_ENDPOINTS.auth.refreshToken,
       API_ENDPOINTS.auth.logout,

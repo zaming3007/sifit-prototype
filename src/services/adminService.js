@@ -64,6 +64,6 @@ export async function listDisputes(params = {}) {
 export async function reviewDispute(id, note) {
   return (await apiClient.patch(API_ENDPOINTS.disputes.review(id), { note })).data.data;
 }
-export async function resolveDispute(id, status, resolution) {
-  return (await apiClient.patch(API_ENDPOINTS.disputes.resolve(id), { status, resolution })).data.data;
+export async function resolveDispute(id, status, resolution, expectedVersion) {
+  return (await apiClient.patch(API_ENDPOINTS.disputes.resolve(id), { status, resolution, expectedVersion })).data.data;
 }

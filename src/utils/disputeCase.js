@@ -1,0 +1,7 @@
+export const returnLabels = { NOT_REQUIRED: 'Không yêu cầu trả hàng', AWAITING_SHIPMENT: 'Chờ người mua gửi trả', SHIPPED: 'Người mua đã khai báo vận đơn trả', SELLER_RECEIVED: 'Người bán đã nhận lại, chờ admin kiểm tra', VERIFIED: 'Admin đã xác minh nhận lại hàng' };
+export const evidenceLabels = { GENERAL: 'Bằng chứng sản phẩm', RETURN_SHIPPING: 'Bằng chứng gửi trả', RETURN_RECEIPT: 'Bằng chứng nhận lại hàng' };
+export const actorLabels = { BUYER: 'Người mua', SELLER: 'Người bán', ADMIN: 'Admin' };
+export const disputeReasonLabels = { ITEM_NOT_RECEIVED: 'Chưa nhận được hàng', ITEM_NOT_AS_DESCRIBED: 'Hàng không đúng mô tả', DAMAGED_ITEM: 'Hàng bị hỏng', WRONG_ITEM: 'Giao sai sản phẩm', OTHER: 'Lý do khác' };
+export const caseActionLabels = { REVIEW: 'Tiếp nhận xem xét', RESOLVE: 'Chốt kết quả', MESSAGE_ADDED: 'Bổ sung phản hồi', EVIDENCE_ADDED: 'Bổ sung ảnh bằng chứng', RETURN_SHIPPED: 'Khai báo vận đơn trả', RETURN_RECEIVED_BY_SELLER: 'Người bán nhận lại hàng', RETURN_VERIFIED: 'Admin xác minh trả hàng', REFUND_COMPLETED: 'Đã ghi nhận hoàn tiền' };
+export const localDateTime = value => { const date = value ? new Date(value) : new Date(); return new Date(date - date.getTimezoneOffset() * 60000).toISOString().slice(0, 19); };
+export const canContribute = dispute => ['OPEN', 'UNDER_REVIEW'].includes(dispute.status) || (dispute.status === 'RESOLVED_BUYER' && dispute.returnFlow?.required && dispute.returnFlow.status !== 'VERIFIED' && !dispute.refundSettledAt);

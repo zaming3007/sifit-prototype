@@ -1,0 +1,71 @@
+import { chromium, expect } from '@playwright/test';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
+import path from 'node:path';
+import http from 'node:http';
+import fs from 'node:fs/promises';
+import { createServer } from 'vite';
+const backend = process.env.SIFIT_BACKEND_DIR || 'C:/Sifit-backend';
+const requireBackend = createRequire(pathToFileURL(path.join(backend, 'package.json')));
+Object.assign(process.env, { NODE_ENV: 'test', BACKGROUND_JOBS_ENABLED: 'false', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'simulator', PAYOUT_MODE: 'simulation', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '', FRONTEND_URL: 'http://localhost:5294', SOCKET_CORS_ORIGIN: 'http://localhost:5294', SOCKET_IO_ENABLED: 'true', MONGOMS_DOWNLOAD_DIR: path.join(backend, 'node_modules/.cache/mongodb-memory-server') });
+const { MongoMemoryReplSet } = requireBackend('mongodb-memory-server'); const mongoose = requireBackend('mongoose'); const argon2 = requireBackend('argon2');
+const mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 } }); process.env.MONGODB_URI = mongo.getUri();
+let browser, vite, server, socket, ipBudget; const errors = []; const apiRequests = [];
+try {
+  await mongoose.connect(process.env.MONGODB_URI);
+  const app = requireBackend('./src/app'); socket = requireBackend('./src/socket');
+  const User = requireBackend('./src/models/user.model'); const Shop = requireBackend('./src/models/sellerProfile.model'); const Product = requireBackend('./src/models/product.model'); const Category = requireBackend('./src/models/category.model'); const Rating = requireBackend('./src/models/sellerRating.model'); const Follow = requireBackend('./src/models/shopFollow.model'); const Cart = requireBackend('./src/models/cart.model'); const Wishlist = requireBackend('./src/models/wishlist.model');
+  await Promise.all(Object.values(mongoose.models).map(model => model.init()));
+  const passwordHash = await argon2.hash('ShopBrowser123!');
+  const [buyer, seller, other] = await User.create(['BUYER', 'SELLER', 'SELLER'].map((role, index) => ({ role, fullName: `${role} Shop ${index}`, email: `shop${index}@browser.test`, passwordHash })));
+  const shop = await Shop.create({ userId: seller._id, shopName: 'Sifit Archive Studio', shopSlug: 'sifit-archive-studio', description: 'Một tủ đồ nhỏ, nhiều lựa chọn mới. Khám phá áo cotton, linen và những món đồ được chọn lọc cho mỗi ngày.', verificationStatus: 'VERIFIED', ratingAverage: 4, ratingCount: 13, totalSales: 17 });
+  const emptyShop = await Shop.create({ userId: other._id, shopName: 'Empty Shop Studio', shopSlug: 'empty-shop-studio' });
+  const categories = await Category.create([{ name: 'Áo', slug: 'ao' }, { name: 'Áo khoác', slug: 'ao-khoac' }]);
+  const image = 'http://localhost:5294/src/image/banner/banner-log.jpg';
+  const body = { sellerId: seller._id, categoryId: categories[0]._id, description: 'A pre-loved cotton shirt', brand: 'Sifit', price: 100000, size: 'M', condition: 'GOOD', status: 'ACTIVE', images: [{ url: image, publicId: 'fixture/shop' }] };
+  const products = await Product.create(Array.from({ length: 31 }, (_, index) => ({ ...body, title: index === 3 ? 'Áo linen Archive' : `Áo cotton Sifit ${String(index).padStart(2, '0')}`, brand: index === 3 ? 'Archive Studio' : 'Sifit', price: 100000 + index * 10000, size: index === 3 ? 'L' : 'M', condition: index === 3 ? 'LIKE_NEW' : 'GOOD', categoryId: categories[index === 3 ? 1 : 0]._id, createdAt: new Date(1700000000000 + index * 60000) })));
+  await Product.create([{ ...body, title: 'Foreign item', sellerId: other._id, brand: 'Foreign Brand', status: 'SOLD' }, { ...body, title: 'Hidden item', brand: 'Hidden Brand', status: 'PENDING' }]);
+  await Rating.create(Array.from({ length: 13 }, (_, index) => ({ orderId: new mongoose.Types.ObjectId(), buyerId: buyer._id, sellerId: seller._id, rating: 4, comment: `Đánh giá thật từ đơn mua ${index + 1}`, createdAt: new Date(1700000000000 + index * 60000) })));
+  server = http.createServer(app); socket.initSocket(server); await new Promise(resolve => server.listen(5059, '127.0.0.1', resolve));
+  vite = await createServer({ configFile: path.resolve('vite.config.js'), server: { host: 'localhost', port: 5294, strictPort: true }, define: { 'import.meta.env.VITE_API_BASE_URL': JSON.stringify('http://localhost:5059/api/v1'), 'import.meta.env.VITE_SOCKET_URL': JSON.stringify('http://localhost:5059') } }); await vite.listen();
+  ipBudget = setInterval(() => requireBackend('./src/middlewares/rateLimit.middleware').apiLimiter.resetKey('127.0.0.1'), 1000);
+  browser = await chromium.launch({ channel: process.env.SIFIT_BROWSER_CHANNEL || 'chrome', headless: true }); await fs.mkdir('artifacts/shop-catalog', { recursive: true });
+  const newPage = async () => { const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } }); page.on('pageerror', error => errors.push(error.message)); page.on('request', request => { if (request.url().includes('/api/v1/')) apiRequests.push(request.url()); }); return page; };
+  const shopUrl = `http://localhost:5294/?view=shop&sellerId=${seller.id}`;
+  const page = await newPage(); await page.goto(shopUrl);
+  await expect(page.getByRole('heading', { name: shop.shopName, exact: true })).toBeVisible(); await expect(page.locator('.shop-page .product-card')).toHaveCount(12);
+  await expect(page.getByLabel('Thương hiệu', { exact: true }).getByRole('option', { name: 'Archive Studio', exact: true })).toHaveCount(1);
+  await expect(page.getByLabel('Thương hiệu', { exact: true })).not.toContainText('Hidden Brand');
+  expect(apiRequests.some(url => new URL(url).pathname === '/api/v1/shops')).toBe(false);
+  const next = () => page.locator('.shop-page .ops-pager').getByRole('button', { name: 'Trang sau', exact: true });
+  await next().click(); await expect(page.locator('.shop-page .ops-pager')).toContainText('Trang 2/3'); await expect(page.locator('.product-card')).toHaveCount(12);
+  await next().click(); await expect(page.locator('.shop-page .ops-pager')).toContainText('Trang 3/3'); await expect(page.locator('.product-card')).toHaveCount(7); await expect(page.locator('.product-title').filter({ hasText: 'Áo linen Archive' })).toBeVisible();
+  await page.getByLabel('Tìm sản phẩm trong shop', { exact: true }).fill('linen'); await page.getByLabel('Danh mục', { exact: true }).selectOption(categories[1].id); await page.getByLabel('Thương hiệu', { exact: true }).selectOption('Archive Studio'); await page.getByLabel('Kích cỡ', { exact: true }).selectOption('L'); await page.getByLabel('Tình trạng', { exact: true }).selectOption('LIKE_NEW'); await page.getByLabel('Giá từ (đ)').fill('130000'); await page.getByLabel('Giá đến (đ)').fill('130000');
+  await page.getByRole('button', { name: /Áp dụng bộ lọc/ }).click(); await expect(page.locator('.product-card')).toHaveCount(1); await expect(page.locator('.product-title')).toHaveText('Áo linen Archive'); expect(new URL(page.url()).searchParams.get('shopPage')).toBeNull();
+  await page.reload(); await expect(page.locator('.product-card')).toHaveCount(1); await expect(page.getByLabel('Tìm sản phẩm trong shop', { exact: true })).toHaveValue('linen');
+  await page.goBack(); await expect(page.locator('.product-card')).toHaveCount(7); await expect(page.getByLabel('Tìm sản phẩm trong shop', { exact: true })).toHaveValue(''); await page.goForward(); await expect(page.locator('.product-card')).toHaveCount(1);
+  await page.getByLabel('Giá đến (đ)').fill('10000'); await page.getByRole('button', { name: /Áp dụng bộ lọc/ }).click(); await expect(page.getByRole('alert')).toContainText('Giá từ không được lớn hơn'); await page.getByLabel('Giá đến (đ)').fill('130000');
+  await page.getByLabel('Tìm sản phẩm trong shop', { exact: true }).fill('no-such-garment'); await page.getByRole('button', { name: /Áp dụng bộ lọc/ }).click(); await expect(page.getByRole('heading', { name: 'Chưa tìm thấy món đồ phù hợp', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Xem toàn bộ sản phẩm', exact: true }).click(); await expect(page.locator('.product-card')).toHaveCount(12);
+  await page.getByLabel('Sắp xếp sản phẩm trong shop').selectOption('price_asc'); await expect(page.locator('.product-title').first()).toHaveText(products[0].title); await next().click(); await expect(page.locator('.shop-page .ops-pager')).toContainText('Trang 2/3');
+  await page.getByLabel('Sắp xếp sản phẩm trong shop').selectOption('price_desc'); await expect(page.locator('.product-title').first()).toHaveText(products[30].title); await expect(page.locator('.shop-page .ops-pager')).toContainText('Trang 1/3');
+  await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: 'artifacts/shop-catalog/desktop.png', fullPage: true });
+  for (const width of [320, 390, 768]) { await page.setViewportSize({ width, height: 844 }); await page.evaluate(() => window.scrollTo(0, 0)); await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.screenshot({ path: `artifacts/shop-catalog/shop-${width}.png`, fullPage: true }); }
+  await page.goto(shopUrl + '&shopPage=999'); await expect(page.locator('.product-card')).toHaveCount(7); await expect.poll(() => new URL(page.url()).searchParams.get('shopPage')).toBe('3');
+  console.log('PASS all products beyond 20, shop-scoped facets/combined filters, stable sorting, empty results, URL reload/back/forward, out-of-range recovery and mobile layouts');
+  await page.getByRole('button', { name: 'Đánh giá shop', exact: true }).click(); await expect(page.locator('.shop-review')).toHaveCount(10); await next().click(); await expect(page.locator('.shop-review')).toHaveCount(3); await page.reload(); await expect(page.locator('.shop-review')).toHaveCount(3);
+  await page.goto(`http://localhost:5294/?view=shop&sellerId=${other.id}`); await expect(page.getByRole('heading', { name: emptyShop.shopName, exact: true })).toBeVisible(); await expect(page.getByRole('heading', { name: 'Shop chưa có sản phẩm đang bán', exact: true })).toBeVisible();
+  const buy = await newPage(); await buy.goto('http://localhost:5294/?view=auth'); await buy.getByLabel('Email', { exact: true }).fill(buyer.email); await buy.getByLabel('Mật khẩu', { exact: true }).fill('ShopBrowser123!'); await buy.locator('.auth-submit').click(); await expect(buy.locator('.account-button')).toBeVisible(); await buy.goto(shopUrl);
+  await buy.getByRole('button', { name: 'Theo dõi shop', exact: true }).click(); await expect(buy.locator('.shop-follow-button')).toHaveText('Đang theo dõi'); expect(await Follow.countDocuments()).toBe(1);
+  const card = buy.locator('.product-card').first(); await card.locator('.product-wishlist-button').click(); await expect(card.locator('.product-wishlist-button')).toHaveText('♥ Đã yêu thích'); expect(await Wishlist.countDocuments()).toBe(1);
+  await card.locator('.product-quick-add').click(); await expect.poll(async () => (await Cart.findOne({ userId: buyer._id }))?.items.length).toBe(1);
+  await card.locator('.product-title').click(); await expect(buy.getByRole('button', { name: 'Mặc Cả', exact: true })).toBeVisible(); await buy.goBack(); await expect(buy.locator('.product-card')).toHaveCount(12); await expect(buy.locator('.shop-follow-button')).toHaveText('Đang theo dõi');
+  await Shop.updateOne({ _id: shop.id }, { status: 'SUSPENDED' }); await page.goto(shopUrl); await expect(page.getByRole('heading', { name: 'Chưa mở được cửa hàng', exact: true })).toBeVisible(); await expect(page.locator('.product-card')).toHaveCount(0);
+  expect(errors).toEqual([]); console.log('PASS paginated shop reviews, empty/unavailable shop, persisted follow/wishlist/cart/product navigation and no browser runtime errors');
+} catch (error) {
+  console.error('SHOP CATALOG UI FAILURE', error); process.exitCode = 1;
+  if (browser) for (const [index, context] of browser.contexts().entries()) { const page = context.pages()[0]; if (page) { await page.screenshot({ path: `artifacts/shop-catalog/failure-${index}.png`, fullPage: true }).catch(() => {}); console.error((await page.locator('body').innerText()).slice(-1600)); } }
+} finally {
+  clearInterval(ipBudget); await browser?.close(); await vite?.close(); await socket?.closeSocket(); if (server?.listening) await new Promise(resolve => server.close(resolve));
+  await new Promise(resolve => setTimeout(resolve, 500)); await mongoose.disconnect(); await mongo.stop();
+}

@@ -26,12 +26,19 @@ export async function listSellerOrders(params = {}) {
   };
 }
 
-export async function getShop(slug) {
-  const response = await apiClient.get(API_ENDPOINTS.shops.bySlug(slug));
+export async function getShop(slug, params = {}, signal) {
+  const response = await apiClient.get(API_ENDPOINTS.shops.bySlug(slug), { params, signal });
+  const data = response.data.data;
   return {
-    shop: response.data?.data?.shop,
-    products: (response.data?.data?.products || []).map(normalizeProduct),
+    shop: data.shop,
+    products: (data.products || []).map(item => ({ ...normalizeProduct(item), seller: { _id: data.shop.userId, name: data.shop.shopName, avatar: data.shop.avatar } })),
+    pagination: data.pagination,
+    facets: data.facets,
   };
+}
+
+export async function getShopBySeller(sellerId, signal) {
+  return (await apiClient.get(`/shops/by-seller/${sellerId}`, { signal })).data.data.shop;
 }
 
 export async function listShops(params = {}) {

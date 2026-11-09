@@ -10,6 +10,10 @@
     "preview": "vite preview",
     "test:ui": "node scripts/verify-api-integration.mjs",
     "test:selling": "node scripts/verify-selling.mjs",
+    "test:refunds": "node scripts/verify-manual-refunds.mjs",
+    "test:returns": "node scripts/verify-dispute-returns.mjs",
+    "test:payment-exceptions": "node scripts/verify-payment-exceptions.mjs",
+    "test:verification": "node scripts/verify-seller-verification.mjs",
     "test:integration": "node scripts/verify-api-integration.mjs"
   },
   "dependencies": {

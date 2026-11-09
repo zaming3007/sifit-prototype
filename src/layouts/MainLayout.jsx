@@ -4,6 +4,10 @@ import SellerWorkspace from '../components/SellerWorkspace';
 import AdminWorkspace from '../components/AdminWorkspace';
 import PortalHeader from '../components/PortalHeader';
 import AccountPage from '../pages/AccountPage';
+import MyProductReports from '../pages/MyProductReports';
+import PaymentResult from '../pages/PaymentResult';
+import FollowingShops from '../pages/FollowingShops';
+import OffersPage from '../pages/OffersPage';
 import AddressBook from '../components/AddressBook';
 import BuyerHeading from '../components/BuyerHeading';
 import Footer from '../components/Footer';
@@ -32,8 +36,8 @@ export default function MainLayout() {
   const [adminTab, setAdminTab] = useState('overview');
   const [adminBusy, setAdminBusy] = useState(false);
   const home = user?.role === 'admin' ? 'admin' : user?.role === 'seller' ? 'seller' : 'homepage';
-  const allowed = user?.role === 'seller' ? ['seller', 'chat', 'notifications', 'account', 'history', 'detail', 'shop', 'resource']
-    : user?.role === 'admin' ? ['admin', 'chat', 'notifications', 'account', 'history', 'detail', 'shop', 'resource'] : null;
+  const allowed = user?.role === 'seller' ? ['seller', 'chat', 'notifications', 'account', 'account-profile', 'report-history', 'payment-result', 'history', 'detail', 'shop', 'resource']
+    : user?.role === 'admin' ? ['admin', 'chat', 'notifications', 'account', 'account-profile', 'history', 'detail', 'shop', 'resource'] : null;
   const forbidden = user && (allowed ? !allowed.includes(currentView) : ['seller', 'admin', 'history'].includes(currentView));
   useEffect(() => {
     if (!authLoading && forbidden) setCurrentView(home);
@@ -44,7 +48,7 @@ export default function MainLayout() {
     if (currentView === 'auth' && !user) return <AuthPage />;
     if (authLoading) return <p className="p-8" role="status">Đang khôi phục phiên đăng nhập…</p>;
     if (forbidden) return <p className="p-8" role="status">Đang mở giao diện tài khoản…</p>;
-    if (['checkout', 'seller', 'chat', 'admin', 'notifications', 'wishlist', 'account', 'account-profile', 'account-addresses', 'account-password', 'history', 'resource'].includes(currentView)) {
+    if (['offers', 'following', 'payment-result', 'checkout', 'seller', 'chat', 'admin', 'notifications', 'wishlist', 'account', 'account-profile', 'account-addresses', 'account-password', 'report-history', 'history', 'resource'].includes(currentView)) {
       if (authLoading) return <p className="p-8" role="status">Đang khôi phục phiên đăng nhập…</p>;
       if (!user) return <div className="p-8 text-center space-y-4"><p>Đăng nhập để tiếp tục.</p><button onClick={() => openAuth()} className="btn-primary">Đăng nhập</button></div>;
       if (currentView === 'admin' && user.role !== 'admin') return <p className="p-8">Bạn không có quyền quản trị.</p>;
@@ -60,6 +64,8 @@ export default function MainLayout() {
       case 'history': return <CheckoutTracker historyOnly />;
       case 'account': return <AccountPage />;
       case 'account-profile': return <AccountPage key="profile" section="profile" />;
+      case 'report-history': return <MyProductReports />;
+      case 'payment-result': return <PaymentResult />;
       case 'account-addresses': return <div className="member-page member-address-page"><BuyerHeading title="Địa chỉ" description="Quản lý những địa chỉ nhận hàng đã lưu của bạn." /><AddressBook /></div>;
       case 'account-password': return <AccountPage key="password" section="password" />;
       case 'resource': return <ResourcePage />;
@@ -70,6 +76,8 @@ export default function MainLayout() {
       case 'auth': return <AuthPage />;
       case 'notifications': return <NotificationsPage />;
       case 'wishlist': return <WishlistPage />;
+      case 'following': return <FollowingShops />;
+      case 'offers': return <OffersPage />;
       case 'info': return <InfoPage />;
       default: return <Homepage />;
     }

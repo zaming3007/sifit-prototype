@@ -1,0 +1,36 @@
+.verification-panel { display: grid; gap: 20px; min-width: 0; margin-top: 26px; padding-top: 24px; border-top: 1px solid #e5ebe0; }
+.verification-panel h2 { font-size: 17px; font-weight: 600; color: #31553a; }
+.verification-panel h3 { font-size: 14px; font-weight: 600; }
+.verification-panel p { font-size: 12px; line-height: 1.85; overflow-wrap: anywhere; }
+.verification-panel .workflow-form, .verification-panel .workflow-form > div, .verification-details > * { min-width: 0; }
+.verification-panel button, .verification-details button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.verification-panel .workflow-form > button, .verification-panel > button { padding: 10px 14px; border: 1px solid #cfddc7; border-radius: 6px; color: #356745; background: #f4f8ef; font-size: 12px; }
+.verification-panel input[type='file'] { min-width: 0; max-width: 100%; }
+.verification-panel label:has(input[type='checkbox']) { display: flex; align-items: flex-start; gap: 10px; line-height: 1.8; }
+.verification-panel input[type='checkbox'] { flex: 0 0 16px; margin-top: 4px; }
+.verification-details .ops-actions { align-items: flex-start; }
+@media (max-width: 700px) {
+  .seller-shell:has(.verification-panel) { --seller-sidebar-width: 64px; }
+  .seller-shell:has(.verification-panel) .seller-nav-label,
+  .seller-shell:has(.verification-panel) .seller-nav-caption,
+  .seller-shell:has(.verification-panel) .seller-active-dot,
+  .seller-shell:has(.verification-panel) .seller-sidebar-shop > div,
+  .seller-shell:has(.verification-panel) .seller-brand > span:not(.seller-brand-mark) { display: none; }
+  .seller-shell:has(.verification-panel) .seller-brand { min-height: 74px; margin-inline: 8px; align-items: center; }
+  .seller-shell:has(.verification-panel) .seller-brand img { width: 46px; height: auto; }
+  .seller-shell:has(.verification-panel) .seller-sidebar-scroll,
+  .seller-shell:has(.verification-panel) .seller-sidebar-bottom { padding-inline: 8px; }
+  .seller-shell:has(.verification-panel) .seller-navigation > button { justify-content: center; padding-inline: 8px; }
+  .seller-shell:has(.verification-panel) .seller-sidebar-shop { padding: 5px 0; justify-content: center; }
+  .seller-shell:has(.verification-panel) .seller-collapse-button,
+  .seller-shell:has(.verification-panel) .seller-signout { justify-content: center; padding-inline: 0; }
+  .seller-shell:has(.verification-panel) .seller-workspace-content { padding: 22px 12px; }
+  .seller-shell:has(.verification-panel) .seller-topbar { padding-inline: 12px; gap: 8px; }
+  .seller-shell:has(.verification-panel) .seller-breadcrumb > span,
+  .seller-shell:has(.verification-panel) .seller-breadcrumb > .sifit-icon { display: none; }
+  .seller-shell:has(.verification-panel) .seller-topbar-actions { gap: 7px; }
+  .seller-shell:has(.verification-panel) .seller-studio > section { padding: 16px; }
+  .verification-panel .ops-card, .verification-details .ops-card { padding: 14px; }
+  .verification-panel .ops-facts, .verification-details .ops-facts { grid-template-columns: minmax(0, 1fr); }
+  .verification-details .ops-actions { flex-direction: column; align-items: stretch; }
+}

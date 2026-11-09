@@ -4,12 +4,12 @@ import Icon from './Icon';
 import { useState } from 'react';
 
 export default function ProductCard({ product }) {
-  const { setSelectedProduct, setCurrentView, addToCart, user, openAuth, wishlist, toggleWishlist } = useApp();
+  const { openProduct, addToCart, user, openAuth, wishlist, toggleWishlist } = useApp();
   const { t, locale } = useLanguage();
   const canBuy = !user || user.role === 'buyer';
   const [failedImage, setFailedImage] = useState(null);
   const image = product.images?.[0];
-  const open = () => { setSelectedProduct(product); setCurrentView('detail'); };
+  const open = () => openProduct(product);
   return <article className="product-card">
     <div className="product-image-wrap"><button className="product-image-button" onClick={open} aria-label={`${t('details')}: ${product.title}`}>{image && failedImage !== image ? <img src={image} alt={product.title} loading="lazy" onError={() => setFailedImage(image)} /> : <span className="product-image-placeholder"><Icon name="image" /><span>{locale === 'vi' ? 'Ảnh chưa khả dụng' : 'Image unavailable'}</span></span>}</button>
       <span className="product-condition">{t('condition')} {product.condition}%</span>

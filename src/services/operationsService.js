@@ -5,6 +5,8 @@ export const list = async (path, params = {}, signal) => data(await apiClient.ge
 export const get = async path => data(await apiClient.get(path));
 export const post = async (path, body = {}) => data(await apiClient.post(path, body));
 export const patch = async (path, body = {}) => data(await apiClient.patch(path, body));
+export const put = async (path, body = {}) => data(await apiClient.put(path, body));
+export const remove = async path => data(await apiClient.delete(path));
 
 export async function exportCsv(type, params) {
   let response;

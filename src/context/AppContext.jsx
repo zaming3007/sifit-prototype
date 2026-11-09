@@ -15,6 +15,11 @@ import { connectRealtime } from '../services/realtimeService';
 const AppContext = createContext();
 export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const currentUserId = user?._id;
+  const currentUserRole = user?.role;
+  const syncUserProfile = useCallback(profile => {
+    setUser(previous => previous && previous._id === profile._id ? { ...previous, ...profile } : previous);
+  }, []);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState('');
   const initialView = useRef(new URLSearchParams(window.location.search).get('view') || 'homepage').current;
@@ -35,9 +40,16 @@ export const AppContextProvider = ({ children }) => {
   const [wishlist, setWishlist] = useState([]);
   const [cart, setCart] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const readProductId = () => {
+    const query = new URLSearchParams(window.location.search);
+    return query.get('view') === 'detail' ? query.get('id') || '' : '';
+  };
+  const [selectedProductId, setSelectedProductId] = useState(readProductId);
+  const [productLoad, setProductLoad] = useState({ id: '', busy: true, error: '' });
+  const [productRevision, setProductRevision] = useState(0);
   const [activeChatId, setActiveChatId] = useState(null);
   const [checkoutProduct, setCheckoutProduct] = useState(null);
-  const [currentSellerId, setCurrentSellerId] = useState(null);
+  const [currentSellerId, setCurrentSellerId] = useState(() => new URLSearchParams(window.location.search).get('sellerId'));
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ categories: [], brands: [], sizes: [], condition: 0, priceMax: 10000000 });
   const [sortOption, setSortOption] = useState('Hàng Mới Về');
@@ -59,6 +71,14 @@ export const AppContextProvider = ({ children }) => {
     window.history.pushState({ view: 'resource' }, '', `?view=resource&type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`);
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
+  const openProduct = product => {
+    const id = product?._id;
+    if (!id) return;
+    setSelectedProductId(id);
+    setCurrentViewRaw('detail');
+    window.history.pushState({ view: 'detail' }, '', `?view=detail&id=${encodeURIComponent(id)}`);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
   const openSellGuide = (section = '') => { setGuideSection(section); setCurrentView('sell-guide'); };
   const browse = (options = {}) => {
     setSearchQuery(options.query || '');
@@ -69,7 +89,7 @@ export const AppContextProvider = ({ children }) => {
   };
   const goBack = () => window.history.length > 1 ? window.history.back() : setCurrentView('homepage');
   useEffect(() => {
-    const pop = event => { setResourceTarget(readResource()); setCurrentViewRaw(event.state?.view || new URLSearchParams(window.location.search).get('view') || 'homepage'); };
+    const pop = event => { setResourceTarget(readResource()); setSelectedProductId(readProductId()); setCurrentSellerId(new URLSearchParams(window.location.search).get('sellerId')); setCurrentViewRaw(event.state?.view || new URLSearchParams(window.location.search).get('view') || 'homepage'); };
     window.history.replaceState({ view: initialView }, '', window.location.href);
     window.addEventListener('popstate', pop);
     return () => window.removeEventListener('popstate', pop);
@@ -112,6 +132,18 @@ export const AppContextProvider = ({ children }) => {
       setAuthError(message); return { success: false, message };
     } finally { setAuthLoading(false); }
   };
+  const loginGoogleUser = async options => {
+    setAuthLoading(true); setAuthError('');
+    try {
+      const result = await authService.googleLogin(options);
+      sessionRef.current += 1; setUser(result.user);
+      setCurrentView(result.user.role === 'admin' ? 'admin' : result.user.role === 'seller' ? 'seller' : 'homepage');
+      return { success: true, data: result.user };
+    } catch (error) {
+      const linkRequired = error.response?.data?.errors?.some(item => item.code === 'GOOGLE_LINK_REQUIRED');
+      return { success: false, message: getApiErrorMessage(error), linkRequired, status: error.response?.status };
+    } finally { setAuthLoading(false); }
+  };
   const registerUser = async (name, email, password, role) => {
     try {
       await authService.register({ name, email, password, role });
@@ -141,9 +173,9 @@ export const AppContextProvider = ({ children }) => {
   }, []);
   useEffect(() => {
     setCart([]); setOrders([]); setChats([]); setMessages({}); setWishlist([]); setChatCursors({});
-    if (!user) return;
+    if (!currentUserId) return;
     let cancelled = false;
-    const jobs = user.role === 'buyer' ? [
+    const jobs = currentUserRole === 'buyer' ? [
       cartService.getCart().then(data => { if (!cancelled) syncCart(data); }),
       collectPages(orderService.listMyOrders).then(data => { if (!cancelled) setOrders(data.items); }),
       collectPages(chatService.listConversations).then(data => { if (!cancelled) setChats(data.items); }),
@@ -157,7 +189,7 @@ export const AppContextProvider = ({ children }) => {
       if (failed && !cancelled) setDataError(getApiErrorMessage(failed.reason));
     });
     return () => { cancelled = true; };
-  }, [user]);
+  }, [currentUserId, currentUserRole]);
 
   const mergeMessage = useCallback(raw => {
     const message = normalizeMessage(raw);
@@ -169,14 +201,14 @@ export const AppContextProvider = ({ children }) => {
     setChats(prev => prev.map(chat => chat._id === message.conversation ? { ...chat, lastMessage: message } : chat));
   }, []);
   useEffect(() => {
-    if (!user) return;
+    if (!currentUserId) return;
     return connectRealtime({ onMessage: mergeMessage, onReconnect: () => {
       fetchChats().catch(error => setDataError(getApiErrorMessage(error)));
       setChatRefresh(value => value + 1);
     } });
-  }, [user, mergeMessage, fetchChats]);
+  }, [currentUserId, mergeMessage, fetchChats]);
   useEffect(() => {
-    if (!user || !activeChatId) return;
+    if (!currentUserId || !activeChatId) return;
     let cancelled = false;
     chatService.listMessages(activeChatId, { limit: 50 }).then(async result => {
       if (cancelled) return;
@@ -187,7 +219,7 @@ export const AppContextProvider = ({ children }) => {
       if (result.items.length) await chatService.markRead(activeChatId, result.items.at(-1)._id);
     }).catch(error => { if (!cancelled) setDataError(getApiErrorMessage(error)); });
     return () => { cancelled = true; };
-  }, [user, activeChatId, chatRefresh]);
+  }, [currentUserId, activeChatId, chatRefresh]);
   const loadOlderMessages = async () => {
     const cursor = chatCursors[activeChatId];
     if (!cursor) return;
@@ -248,27 +280,45 @@ export const AppContextProvider = ({ children }) => {
       setWishlist(result.items);
     } catch (error) { alert(getApiErrorMessage(error)); }
   };
-  const viewShopProfile = sellerId => { setCurrentSellerId(sellerId); setCurrentView('shop'); };
+  const viewShopProfile = sellerId => { setCurrentSellerId(sellerId); setCurrentViewRaw('shop'); window.history.pushState({ view: 'shop' }, '', '?view=shop&sellerId=' + encodeURIComponent(sellerId)); window.scrollTo({ top: 0, behavior: 'instant' }); };
   const [productReviews, setProductReviews] = useState({});
   useEffect(() => {
-    if (!selectedProduct?._id || currentView !== 'detail') return;
+    if (currentView !== 'detail') return;
     let cancelled = false;
-    Promise.all([productService.getProduct(selectedProduct._id), collectPages(params => reviewService.listProductReviews(selectedProduct._id, params)),
-      reviewService.productSummary(selectedProduct._id)]).then(([product, reviews, summary]) => {
+    const id = selectedProductId;
+    setSelectedProduct(null);
+    if (!/^[a-f\d]{24}$/i.test(id)) {
+      setProductLoad({ id, busy: false, error: 'Liên kết sản phẩm không hợp lệ hoặc thiếu mã sản phẩm.' });
+      return;
+    }
+    setProductLoad({ id, busy: true, error: '' });
+    productService.getProduct(id).then(product => {
       if (cancelled) return;
-      const category = apiCategories.find(item => (item._id || item.id) === product.categoryId);
-      setSelectedProduct(previous => ({ ...product, category: category?.name || previous.category,
-        categorySlug: category?.slug || previous.categorySlug,
-        averageRating: summary.summary?.averageRating ?? 0, reviewCount: summary.summary?.totalReviews ?? 0 }));
-      setProductReviews(prev => ({ ...prev, [product._id]: reviews.items }));
-    }).catch(error => { if (!cancelled) setDataError(getApiErrorMessage(error)); });
+      setSelectedProduct(product);
+      setProductLoad({ id, busy: false, error: '' });
+      // Reviews can fail independently without hiding a valid product.
+      Promise.allSettled([collectPages(params => reviewService.listProductReviews(id, params)), reviewService.productSummary(id)])
+        .then(([reviews, summary]) => {
+          if (cancelled) return;
+          if (reviews.status === 'fulfilled') setProductReviews(prev => ({ ...prev, [id]: reviews.value.items }));
+          if (summary.status === 'fulfilled') setSelectedProduct(previous => previous?._id === id ? { ...previous,
+            averageRating: summary.value.summary?.averageRating ?? 0, reviewCount: summary.value.summary?.totalReviews ?? 0 } : previous);
+        });
+    }).catch(error => { if (!cancelled) setProductLoad({ id, busy: false, error: error.response?.status === 404
+      ? 'Sản phẩm không còn khả dụng hoặc đã được ẩn.' : 'Không tải được sản phẩm. Vui lòng thử lại.' }); });
     return () => { cancelled = true; };
-  }, [selectedProduct?._id, currentView, apiCategories]);
+  }, [selectedProductId, currentView, productRevision]);
+  const selectedCategory = apiCategories.find(item => (item._id || item.id) === selectedProduct?.categoryId);
+  const productWithCategory = selectedProduct && { ...selectedProduct,
+    category: selectedCategory?.name || selectedProduct.category,
+    categorySlug: selectedCategory?.slug || selectedProduct.categorySlug };
   return <AppContext.Provider value={{
-    user, authLoading, authError, loginUser, registerUser, logoutUser,
+    user, syncUserProfile, authLoading, authError, loginUser, loginGoogleUser, registerUser, logoutUser,
     currentView, setCurrentView, resourceTarget, openResource, goBack, authMode, authRole, openAuth, browse, infoPage, setInfoPage,
     guideSection, setGuideSection, openSellGuide, products, setProducts, apiCategories, fetchListings,
-    publicLoading, dataError, setDataError, reloadPublicData, selectedProduct, setSelectedProduct,
+    publicLoading, dataError, setDataError, reloadPublicData, selectedProduct: productWithCategory, openProduct, selectedProductId,
+    productLoading: productLoad.id !== selectedProductId || productLoad.busy, productError: productLoad.error,
+    retryProduct: () => setProductRevision(value => value + 1),
     cart, addToCart, removeFromCart, handleInstantBuy, checkoutProduct, setCheckoutProduct,
     orders, fetchOrders, createOrder, chats, activeChatId, setActiveChatId, messages, sendMessage,
     fetchChats, startChat, loadOlderMessages, hasOlderMessages: !!chatCursors[activeChatId],

@@ -2,9 +2,12 @@ export const API_ENDPOINTS = {
   auth: {
     register: '/auth/register',
     login: '/auth/login',
+    google: '/auth/google',
+    googleConfig: '/auth/google/config',
     refreshToken: '/auth/refresh-token',
     logout: '/auth/logout',
     me: '/auth/me',
+    avatar: '/auth/me/avatar',
     changePassword: '/auth/change-password',
   },
   categories: '/categories',

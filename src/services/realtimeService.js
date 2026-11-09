@@ -1,5 +1,5 @@
 import { io } from 'socket.io-client';
-import { API_BASE_URL, getAccessToken, refreshAccessToken } from './apiClient';
+import { API_BASE_URL, getAccessToken, refreshAccessToken, clearAccessToken } from './apiClient';
 import { collectPages } from './pagination';
 import { listConversations } from './chatService';
 
@@ -9,6 +9,11 @@ export function connectRealtime({ onMessage, onReconnect, onNotifications }) {
   const socket = io(origin, { auth: callback => callback({ token: getAccessToken() }), withCredentials: true });
   let stopped = false;
   let refreshing = false;
+  socket.on('account:suspended', () => {
+    clearAccessToken();
+    window.dispatchEvent(new Event('sifit:session-expired'));
+    socket.disconnect();
+  });
   socket.on('message:new', payload => onMessage(payload.message));
   const joinRooms = async () => {
     try {

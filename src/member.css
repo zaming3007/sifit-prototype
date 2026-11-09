@@ -135,3 +135,58 @@
   .member-page .member-order-header h3 { font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .member-page *, .member-page *::after { transition: none !important; } }
+/* Personal profile editing and avatar feedback. */
+.user-avatar { display: inline-grid; place-items: center; position: relative; overflow: hidden; flex-shrink: 0; line-height: 1; }
+.user-avatar > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.account-avatar { width: 27px; height: 27px; border-radius: 50%; background: #e7edda; color: #516539; font-size: 10px; }
+.profile-edit-form { display: grid; gap: 18px; }
+.profile-edit-form .input-field { width: 100%; min-height: 43px; font-size: 13px; }
+.profile-edit-form input[readonly] { background: #f3f5ee; color: #6b7860; }
+.profile-field-note { font-size: 11px; color: #7c8870; line-height: 1.8; margin: -10px 0 0; }
+.profile-account-details { display: grid; gap: 12px; padding: 16px 0; border-block: 1px solid #e6eadf; margin: 0; }
+.profile-account-details > div { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 12px; }
+.profile-account-details dt { color: #7b8871; }
+.profile-account-details dd { margin: 0; font-weight: 500; }
+.profile-edit-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; padding-top: 4px; }
+.profile-edit-actions .btn-primary { display: inline-flex; align-items: center; gap: 9px; min-height: 43px; font-size: 12px; }
+.profile-edit-actions .btn-primary .sifit-icon { width: 17px; height: 17px; }
+.profile-reset { font-size: 11px; color: #667454; text-decoration: underline; text-underline-offset: 4px; min-height: 40px; }
+.profile-edit-actions button:disabled, .profile-avatar-actions button:disabled { opacity: .5; cursor: not-allowed; }
+.profile-avatar-actions { display: grid; justify-items: center; gap: 10px; margin-top: 22px; }
+.profile-avatar-picker { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid #cbd8bd; border-radius: 5px; padding: 10px 12px; font-size: 11px; color: #445b31; background: #fff; cursor: pointer; overflow: hidden; min-height: 41px; }
+.profile-avatar-picker input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.profile-avatar-picker:focus-within { outline: 2px solid #748f46; outline-offset: 3px; }
+.profile-avatar-picker .sifit-icon { width: 16px; height: 16px; }
+.profile-avatar-picker.is-disabled { opacity: .5; cursor: not-allowed; }
+.member-identity p.profile-avatar-help { margin: 0; font-size: 9px; color: #829071; }
+.profile-avatar-pending { display: grid; gap: 10px; justify-items: center; width: 100%; }
+.member-identity .profile-avatar-pending p { margin: 0; font-size: 10px; }
+.profile-avatar-save { padding: 9px 15px; border-radius: 5px; color: #fff; background: #285337; font-size: 11px; min-height: 38px; }
+.profile-avatar-pending > button:last-child, .profile-avatar-remove { font-size: 10px; color: #727e67; text-decoration: underline; text-underline-offset: 3px; min-height: 30px; }
+.profile-success { display: flex; gap: 9px; align-items: center; color: #326041; background: #edf5e7; border: 1px solid #d8e8cd; padding: 12px 16px; border-radius: 7px; font-size: 12px; line-height: 1.7; }
+.profile-success > .sifit-icon { width: 19px; height: 19px; }
+@media (max-width: 600px) { .profile-edit-actions { gap: 13px; } .profile-edit-form { gap: 16px; } .profile-account-details > div { font-size: 11px; } }
+.profile-edit-form, .member-profile-layout > * { min-width: 0; }
+.profile-edit-form .input-field { min-width: 0; }
+.account-button > span:not(.user-avatar):not(.sifit-icon) { max-width: 145px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 760px) {
+  .seller-shell:has(.member-account) { --seller-sidebar-width: 64px; }
+  .seller-shell:has(.member-account) .seller-brand { margin-inline: 7px; align-items: center; min-height: 78px; }
+  .seller-shell:has(.member-account) .seller-brand img { width: 46px; height: auto; }
+  .seller-shell:has(.member-account) .seller-brand > span,
+  .seller-shell:has(.member-account) .seller-nav-caption,
+  .seller-shell:has(.member-account) .seller-navigation > button > span:not(.sifit-icon),
+  .seller-shell:has(.member-account) .seller-sidebar-shop > div,
+  .seller-shell:has(.member-account) .seller-signout > span:not(.sifit-icon),
+  .seller-shell:has(.member-account) .seller-collapse-button { display: none; }
+  .seller-shell:has(.member-account) .seller-sidebar-scroll { padding-inline: 6px; }
+  .seller-shell:has(.member-account) .seller-navigation > button { justify-content: center; padding-inline: 8px; }
+  .seller-shell:has(.member-account) .seller-sidebar-shop { justify-content: center; padding-inline: 0; }
+  .seller-shell:has(.member-account) .seller-signout { justify-content: center; padding-inline: 8px; }
+  .seller-shell:has(.member-account) .seller-topbar { padding-inline: 12px; gap: 8px; }
+  .seller-shell:has(.member-account) .seller-breadcrumb { display: none; }
+  .seller-shell:has(.member-account) .seller-topbar-actions { margin-left: auto; gap: 8px; }
+  .seller-shell:has(.member-account) .seller-topbar-account > span:not(.user-avatar):not(.sifit-icon) { max-width: 80px; }
+  .seller-shell:has(.member-account) .seller-workspace-content { padding: 18px 10px; }
+  .seller-shell .member-account, .admin-shell .member-account { width: 100%; padding: 10px 0 30px; }
+}

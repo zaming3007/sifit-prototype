@@ -1,0 +1,1 @@
+export const refundLabels = { REQUESTED: 'Chờ người mua cung cấp tài khoản', PENDING: 'Chờ admin kiểm tra tài khoản', APPROVED: 'Đã duyệt, chờ chuyển khoản', SUCCEEDED: 'Đã hoàn tiền', CANCELLED: 'Đã hủy khoản hoàn' };

@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import LocalizedContent from '../components/LocalizedContent';
 import ReportModal from '../components/ReportModal';
+import OfferDialog from '../components/OfferDialog';
 
 export default function ProductDetail() {
-  const { selectedProduct, setCurrentView, addToCart, handleInstantBuy, startChat, user, viewShopProfile, getProductReviews } = useApp();
+  const { selectedProduct, selectedProductId, productLoading, productError, retryProduct, setCurrentView, addToCart, handleInstantBuy, startChat, user, viewShopProfile, getProductReviews, openAuth } = useApp();
+  const [offerOpen, setOfferOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
 
-  if (!selectedProduct) return null;
+  useEffect(() => { setActiveImg(0); setOfferOpen(false); setReportOpen(false); }, [selectedProductId]);
+
+  if (productLoading) return <div className="sf-container py-16" role="status">Đang tải sản phẩm…</div>;
+  if (productError || !selectedProduct) return <section className="sf-container py-16" aria-label="Không tải được sản phẩm">
+    <h1 className="text-2xl font-bold mb-4">Không thể hiển thị sản phẩm</h1>
+    <p role="alert" className="mb-6">{productError || 'Sản phẩm không còn khả dụng.'}</p>
+    <div className="flex gap-4"><button className="btn-outline" onClick={retryProduct}>Thử lại</button>
+      <button className="btn-primary" onClick={() => setCurrentView('catalog')}>Tiếp tục mua sắm</button></div>
+  </section>;
 
   const reviews = getProductReviews(selectedProduct._id);
   const isSold = selectedProduct.status !== 'active';
@@ -126,11 +136,12 @@ export default function ProductDetail() {
                   <button onClick={() => addToCart(selectedProduct)} className="btn-outline text-center py-3.5 text-xs">
                     Thêm Giỏ Hàng
                   </button>
-                  <button onClick={() => startChat(selectedProduct)} className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-xs uppercase tracking-widest py-3.5 rounded-full transition-colors cursor-pointer border-none">
+                  <button disabled={selectedProduct.price <= 1} onClick={() => user ? setOfferOpen(true) : openAuth()} className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-xs uppercase tracking-widest py-3.5 rounded-full transition-colors cursor-pointer border-none">
                     <span className="material-symbols-outlined text-base">chat</span>
                     Mặc Cả
                   </button>
                 </div>
+                <button onClick={() => startChat(selectedProduct)} className="text-sm text-primary py-2 w-full">Nhắn tin cho shop</button>
               </>
             )}
             <div className="text-center pt-4 border-t border-gray-100">
@@ -193,7 +204,8 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} />
+      <ReportModal isOpen={reportOpen} product={selectedProduct} onClose={() => setReportOpen(false)} />
+      {offerOpen && <OfferDialog product={selectedProduct} onClose={() => setOfferOpen(false)} />}
     </div>
     </LocalizedContent>
   );
