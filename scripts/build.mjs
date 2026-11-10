@@ -1,9 +1,12 @@
-import { build } from 'vite';
+import { build, loadEnv } from 'vite';
+import { existsSync } from 'node:fs';
 import { copyFile, mkdir } from 'node:fs/promises';
 
 // A local development .env must never silently put localhost into a release.
-process.env.VITE_API_BASE_URL ??= '/api/v1';
-process.env.VITE_SOCKET_URL ??= '';
+const productionEnv = existsSync('.env.production') || existsSync('.env.production.local')
+  ? loadEnv('production', process.cwd(), 'VITE_') : {};
+process.env.VITE_API_BASE_URL ??= productionEnv.VITE_API_BASE_URL || '/api/v1';
+process.env.VITE_SOCKET_URL ??= productionEnv.VITE_SOCKET_URL || '';
 const api = process.env.VITE_API_BASE_URL;
 const publicHTTPS = value => {
   try { const url = new URL(value); return url.protocol === 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname); }
