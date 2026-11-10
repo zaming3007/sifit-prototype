@@ -10,7 +10,7 @@ import { createServer } from 'vite';
 // ID tokens are locally RSA-signed and validated by the real Google cryptographic verifier.
 const backend = process.env.SIFIT_BACKEND_DIR || 'C:/Sifit-backend';
 const requireBackend = createRequire(pathToFileURL(path.join(backend, 'package.json')));
-Object.assign(process.env, { NODE_ENV: 'test', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'simulator', PAYOUT_MODE: 'simulation', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '', FRONTEND_URL: 'http://localhost:5197', SOCKET_CORS_ORIGIN: 'http://localhost:5197',
+Object.assign(process.env, { NODE_ENV: 'test', PAYMENTS_ENABLED: 'true', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'simulator', PAYOUT_MODE: 'simulation', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '', FRONTEND_URL: 'http://localhost:5197', SOCKET_CORS_ORIGIN: 'http://localhost:5197',
   SOCKET_IO_ENABLED: 'false', GOOGLE_CLIENT_ID: '1234567890-test.apps.googleusercontent.com',
   MONGOMS_DOWNLOAD_DIR: path.join(backend, 'node_modules/.cache/mongodb-memory-server') });
 const { MongoMemoryServer } = requireBackend('mongodb-memory-server');

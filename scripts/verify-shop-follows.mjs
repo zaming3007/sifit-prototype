@@ -7,7 +7,7 @@ import fs from 'node:fs/promises';
 import { createServer } from 'vite';
 const backend = process.env.SIFIT_BACKEND_DIR || 'C:/Sifit-backend';
 const requireBackend = createRequire(pathToFileURL(path.join(backend, 'package.json')));
-Object.assign(process.env, { NODE_ENV: 'test', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'simulator', PAYOUT_MODE: 'simulation', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '', FRONTEND_URL: 'http://localhost:5290', SOCKET_CORS_ORIGIN: 'http://localhost:5290', SOCKET_IO_ENABLED: 'true', MONGOMS_DOWNLOAD_DIR: path.join(backend, 'node_modules/.cache/mongodb-memory-server') });
+Object.assign(process.env, { NODE_ENV: 'test', PAYMENTS_ENABLED: 'true', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'simulator', PAYOUT_MODE: 'simulation', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '', FRONTEND_URL: 'http://localhost:5290', SOCKET_CORS_ORIGIN: 'http://localhost:5290', SOCKET_IO_ENABLED: 'true', MONGOMS_DOWNLOAD_DIR: path.join(backend, 'node_modules/.cache/mongodb-memory-server') });
 const { MongoMemoryReplSet } = requireBackend('mongodb-memory-server'); const mongoose = requireBackend('mongoose'); const argon2 = requireBackend('argon2');
 const mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 } }); process.env.MONGODB_URI = mongo.getUri();
 let browser, vite, server, socket, ipBudget; const errors = [];

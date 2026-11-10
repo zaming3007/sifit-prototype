@@ -14,6 +14,7 @@ export default function OrderDetails({ order, now }) {
       {address.notes && <p>Ghi chú địa chỉ: {address.notes}</p>}
     </address> : <p>Đơn hàng chưa có thông tin địa chỉ.</p>}
     {order.notes && <p>Ghi chú đơn hàng: {order.notes}</p>}
+    {order.sellerShipBy && ['PAID', 'PROCESSING'].includes(order.orderStatus) && <div><p>Hạn gửi hàng: <Timestamp value={order.sellerShipBy} /></p>{new Date(order.sellerShipBy) < new Date(now) && <p className="text-red-700">Đã quá hạn gửi hàng. Vui lòng liên hệ shop hoặc hỗ trợ; đơn đã thanh toán không tự hủy.</p>}</div>}
     <p>Ngày đặt hàng: <Timestamp value={order.createdAt} /></p>
     <p className="text-gray-500">Các mốc thời gian hiển thị theo giờ Việt Nam (UTC+7).</p>
     {order.orderStatus === 'PENDING_PAYMENT' && <div>

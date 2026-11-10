@@ -9,7 +9,7 @@ import { createServer } from 'vite';
 // Real backend API and disposable DB. Only external Cloudinary storage is replaced.
 const backend = process.env.SIFIT_BACKEND_DIR || 'C:/Sifit-backend';
 const requireBackend = createRequire(pathToFileURL(path.join(backend, 'package.json')));
-Object.assign(process.env, { NODE_ENV: 'test', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'simulator', PAYOUT_MODE: 'simulation', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '', FRONTEND_URL: 'http://localhost:5287', SOCKET_CORS_ORIGIN: 'http://localhost:5287',
+Object.assign(process.env, { NODE_ENV: 'test', PAYMENTS_ENABLED: 'true', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'simulator', PAYOUT_MODE: 'simulation', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '', FRONTEND_URL: 'http://localhost:5287', SOCKET_CORS_ORIGIN: 'http://localhost:5287',
   GOOGLE_CLIENT_ID: '', SOCKET_IO_ENABLED: 'true', MONGOMS_DOWNLOAD_DIR: path.join(backend, 'node_modules/.cache/mongodb-memory-server') });
 const { MongoMemoryServer } = requireBackend('mongodb-memory-server');
 const mongoose = requireBackend('mongoose');

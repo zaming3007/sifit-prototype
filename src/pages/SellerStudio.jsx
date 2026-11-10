@@ -1,3 +1,4 @@
+import { OverdueOrders, RecoveryPanel } from './AdminOperations';
 import { useCallback, useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import LocalizedContent from '../components/LocalizedContent';
@@ -91,7 +92,7 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
   return <LocalizedContent><div className="seller-studio" data-section={tab}>
     <div className="seller-page-heading"><div><p className="seller-eyebrow">SIFIT / SELLER STUDIO</p><h1>{sections[tab][0]}</h1><p>{sections[tab][1]}</p></div><div className="seller-page-heading-actions">{tab === 'overview' && <><button className="seller-secondary-button" disabled={busy} onClick={() => run(reload)}><Icon name="refresh" />Làm mới</button><button className="seller-primary-button" disabled={busy} onClick={newDraft}><Icon name="add_box" />Tạo sản phẩm mới</button></>}</div></div>
     <Feedback busy={busy} error={error} />{notice && <p role="status" className="p-3 bg-green-50 rounded-xl">{notice}</p>}
-    {tab === 'payouts' && <SellerBankAccount />}
+    {tab === 'payouts' && <><SellerBankAccount /><RecoveryPanel /></>}
     {tab === 'offers' && <OffersPage embedded />}
     {['shipments', 'disputes', 'reviews', 'payouts'].includes(tab) && <SellerOperations key={tab} section={tab} />}
     {tab === 'overview' && <>
@@ -127,6 +128,7 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
       </form>
       {savedProduct && <div className="space-y-3"><div className="flex flex-wrap gap-3">{savedProduct.imageAssets.map(asset => <div key={asset.publicId}><img src={asset.url} alt="" className="w-24 h-24 object-cover rounded-xl" /><button disabled={busy} onClick={() => run(async () => { setSavedProduct(await productService.deleteImage(savedProduct._id, asset.publicId)); await refreshProducts(); })}>Xóa ảnh</button></div>)}</div><button disabled={busy || !savedProduct.images.length} onClick={() => submit(savedProduct)}>Gửi bản đã lưu để duyệt</button></div>}
     </Panel>}
+    {tab === 'orders' && <OverdueOrders />}
     {tab === 'orders' && <div className="seller-orders-list space-y-4"><div className="seller-orders-toolbar"><span><strong>{orders.length}</strong> đơn bán</span><button className="seller-secondary-button" disabled={busy} onClick={() => run(refreshOrders)}><Icon name="refresh" />Làm mới đơn bán</button></div>{!orders.length && <div className="seller-empty-state"><span><Icon name="receipt_long" /></span><h3>Chưa có đơn bán.</h3><p>Đơn hàng của khách sẽ xuất hiện tại đây.</p></div>}{orders.map(order => <OrderCard key={order._id} order={order} seller addresses={addresses} onChange={refreshOrders} />)}</div>}
     {tab === 'addresses' && <AddressBook onChange={setAddresses} />}
     {tab === 'profile' && <Panel title="Hồ sơ shop"><p>Trạng thái xác minh: {verificationLabels[profile?.verificationStatus] || 'Chưa tạo shop'}</p><form className="space-y-3 max-w-xl" onSubmit={event => { event.preventDefault(); run(async () => {

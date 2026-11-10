@@ -4,4 +4,5 @@ export const adminGroups = [
   { label: 'KIỂM DUYỆT & HỖ TRỢ', items: [['product-reports', 'Báo cáo sản phẩm', 'flag', 'Kiểm tra vi phạm và quản lý quyền báo cáo.'], ['verifications', 'Xác minh shop', 'verified_user', 'Xem xét các yêu cầu xác minh cửa hàng.'], ['disputes', 'Khiếu nại', 'forum', 'Tiếp nhận và xử lý các khiếu nại trên sàn.'], ['reviews', 'Đánh giá', 'star', 'Kiểm duyệt đánh giá sản phẩm và cửa hàng.'], ['reports', 'Báo cáo tin nhắn', 'chat_bubble_outline', 'Xem xét các tin nhắn được người dùng báo cáo.']] },
   { label: 'TÀI CHÍNH & HỆ THỐNG', items: [['finance', 'Tài chính', 'account_balance_wallet', 'Quản lý giao dịch, hoa hồng, hoàn tiền và chi trả.'], ['audit', 'Nhật ký', 'history', 'Theo dõi lịch sử thao tác quản trị.']] },
 ];
+adminGroups[adminGroups.length - 1].items.push(['operations', 'Vận hành', 'settings', 'Theo dõi tác vụ, email, đơn quá hạn và thu hồi tiền.']);
 export const adminSections = adminGroups.flatMap(group => group.items);

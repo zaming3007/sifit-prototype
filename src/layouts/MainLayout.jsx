@@ -18,6 +18,7 @@ import Chat from '../pages/Chat';
 import ShopProfile from '../pages/ShopProfile';
 import AuthPage from '../pages/AuthPage';
 import AiStylist from '../pages/AiStylist';
+import EmailActionPage from '../components/EmailAccountActions';
 import InfoPage from '../pages/InfoPage';
 import SellPage from '../pages/SellPage';
 import CleanOutGuide from '../pages/CleanOutGuide';
@@ -38,12 +39,13 @@ export default function MainLayout() {
   const home = user?.role === 'admin' ? 'admin' : user?.role === 'seller' ? 'seller' : 'homepage';
   const allowed = user?.role === 'seller' ? ['seller', 'chat', 'notifications', 'account', 'account-profile', 'report-history', 'payment-result', 'history', 'detail', 'shop', 'resource']
     : user?.role === 'admin' ? ['admin', 'chat', 'notifications', 'account', 'account-profile', 'history', 'detail', 'shop', 'resource'] : null;
-  const forbidden = user && (allowed ? !allowed.includes(currentView) : ['seller', 'admin', 'history'].includes(currentView));
+  const forbidden = currentView !== 'account-action' && user && (allowed ? !allowed.includes(currentView) : ['seller', 'admin', 'history'].includes(currentView));
   useEffect(() => {
     if (!authLoading && forbidden) setCurrentView(home);
   }, [authLoading, forbidden, home, setCurrentView]);
 
   const renderView = () => {
+    if (currentView === 'account-action') return <EmailActionPage />;
     // Keep form state and error messages mounted while a login is in progress.
     if (currentView === 'auth' && !user) return <AuthPage />;
     if (authLoading) return <p className="p-8" role="status">Đang khôi phục phiên đăng nhập…</p>;

@@ -8,7 +8,7 @@ import { randomUUID } from 'node:crypto';
 import { createServer } from 'vite';
 const backend = process.env.SIFIT_BACKEND_DIR || 'C:/Sifit-backend';
 const requireBackend = createRequire(pathToFileURL(path.join(backend, 'package.json')));
-Object.assign(process.env, { NODE_ENV: 'test', BACKGROUND_JOBS_ENABLED: 'false', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'manual', PAYOUT_MODE: 'manual', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '',
+Object.assign(process.env, { NODE_ENV: 'test', PAYMENTS_ENABLED: 'true', BACKGROUND_JOBS_ENABLED: 'false', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'manual', PAYOUT_MODE: 'manual', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '',
   FRONTEND_URL: 'http://localhost:5291', SOCKET_CORS_ORIGIN: 'http://localhost:5291', SOCKET_IO_ENABLED: 'true',
   MONGOMS_DOWNLOAD_DIR: path.join(backend, 'node_modules/.cache/mongodb-memory-server') });
 const { MongoMemoryReplSet } = requireBackend('mongodb-memory-server'); const mongoose = requireBackend('mongoose');

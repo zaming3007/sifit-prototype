@@ -10,7 +10,7 @@ import { createServer } from 'vite';
 const backend = process.env.SIFIT_BACKEND_DIR || 'C:/Sifit-backend';
 const requireBackend = createRequire(pathToFileURL(path.join(backend, 'package.json')));
 Object.assign(process.env, {
-  NODE_ENV: 'test', BACKGROUND_JOBS_ENABLED: 'false', PAYMENT_PROVIDER: 'payos',
+  NODE_ENV: 'test', PAYMENTS_ENABLED: 'true', BACKGROUND_JOBS_ENABLED: 'false', PAYMENT_PROVIDER: 'payos',
   SHIPPING_PROVIDER: 'manual', PAYOUT_MODE: 'manual', PAYOS_CLIENT_ID: 'fixture-client',
   PAYOS_API_KEY: 'fixture-api', PAYOS_CHECKSUM_KEY: 'fixture-checksum',
   FRONTEND_URL: 'http://localhost:5293', SOCKET_CORS_ORIGIN: 'http://localhost:5293', SOCKET_IO_ENABLED: 'true',

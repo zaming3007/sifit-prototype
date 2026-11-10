@@ -5,17 +5,19 @@ import path from 'node:path';
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import { createServer } from 'vite';
+import { verifyAccountOperations } from './verify-account-operations.mjs';
 
 // Real Express routes + MongoDB replica set. Only external image storage is
 // replaced; no browser route interception or fake API responses are used.
 const backend = process.env.SIFIT_BACKEND_DIR || 'C:/Sifit-backend';
 const requireBackend = createRequire(pathToFileURL(path.join(backend, 'package.json')));
 Object.assign(process.env, {
-  NODE_ENV: 'test', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'simulator', PAYOUT_MODE: 'simulation', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '', FRONTEND_URL: 'http://localhost:5187', SOCKET_CORS_ORIGIN: 'http://localhost:5187',
+  NODE_ENV: 'test', PAYMENTS_ENABLED: 'true', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'simulator', PAYOUT_MODE: 'simulation', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '', FRONTEND_URL: 'http://localhost:5187', SOCKET_CORS_ORIGIN: 'http://localhost:5187',
   SOCKET_IO_ENABLED: 'true', JWT_ACCESS_SECRET: 'integration-access-secret-32-characters',
   JWT_REFRESH_SECRET: 'integration-refresh-secret-32-characters', PAYMENT_WEBHOOK_SECRET: 'integration-payment-secret-32-characters',
   SHIPPING_WEBHOOK_SECRET: 'integration-shipping-secret-32-characters', COMMISSION_RATE: '10',
   MONGOMS_DOWNLOAD_DIR: path.join(backend, 'node_modules/.cache/mongodb-memory-server'),
+  SMTP_HOST: '', SMTP_USER: '', SMTP_PASSWORD: '', SMTP_FROM: '',
 });
 const { MongoMemoryReplSet } = requireBackend('mongodb-memory-server');
 const mongoose = requireBackend('mongoose');
@@ -724,6 +726,8 @@ try {
     await context.close();
   }
   console.log('PASS buyer and seller registration persists selected roles and opens the correct interface');
+  resetRateBudget();
+  await verifyAccountOperations({ browser, base, requireBackend, adminPage, errors });
   await sell.goto(`${base}/?view=chat`);
   await expect.poll(() => socket.getIo().sockets.adapter.rooms.get(`user:${seller.id}`)?.size || 0).toBeGreaterThan(0);
   expect((await call(adminPage, 'patch', `/admin/users/${seller.id}/status`, { status: 'SUSPENDED', reason: 'Verify active browser session is disconnected' })).status).toBe(200);

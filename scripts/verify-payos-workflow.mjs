@@ -7,7 +7,7 @@ import fs from 'node:fs/promises';
 import { createServer } from 'vite';
 const backend = process.env.SIFIT_BACKEND_DIR || 'C:/Sifit-backend';
 const requireBackend = createRequire(pathToFileURL(path.join(backend, 'package.json')));
-Object.assign(process.env, { NODE_ENV: 'test', PAYMENT_PROVIDER: 'payos', SHIPPING_PROVIDER: 'manual', PAYOUT_MODE: 'manual', PAYOUT_HOLD_DAYS: '0', PAYOS_CLIENT_ID: 'fixture', PAYOS_API_KEY: 'fixture', PAYOS_CHECKSUM_KEY: 'fixture-checksum', FRONTEND_URL: 'http://localhost:5289', SOCKET_CORS_ORIGIN: 'http://localhost:5289', SOCKET_IO_ENABLED: 'true', MONGOMS_DOWNLOAD_DIR: path.join(backend, 'node_modules/.cache/mongodb-memory-server') });
+Object.assign(process.env, { NODE_ENV: 'test', PAYMENTS_ENABLED: 'true', PAYMENT_PROVIDER: 'payos', SHIPPING_PROVIDER: 'manual', PAYOUT_MODE: 'manual', PAYOUT_HOLD_DAYS: '0', PAYOS_CLIENT_ID: 'fixture', PAYOS_API_KEY: 'fixture', PAYOS_CHECKSUM_KEY: 'fixture-checksum', FRONTEND_URL: 'http://localhost:5289', SOCKET_CORS_ORIGIN: 'http://localhost:5289', SOCKET_IO_ENABLED: 'true', MONGOMS_DOWNLOAD_DIR: path.join(backend, 'node_modules/.cache/mongodb-memory-server') });
 const { MongoMemoryReplSet } = requireBackend('mongodb-memory-server');
 const mongoose = requireBackend('mongoose'); const argon2 = requireBackend('argon2'); const { PayOS } = requireBackend('@payos/node');
 const mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 } }); process.env.MONGODB_URI = mongo.getUri();

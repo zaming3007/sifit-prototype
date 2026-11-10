@@ -6,6 +6,7 @@ import GoogleSignIn from '../components/GoogleSignIn';
 import Icon from '../components/Icon';
 import logo from '../image/logo-favicon/sifit-mark.png';
 import hero from '../image/banner/banner-log.jpg';
+import { EmailRequest } from '../components/EmailAccountActions';
 
 export default function AuthPage() {
   const { loginUser, loginGoogleUser, registerUser, authMode, authRole, openAuth, setCurrentView, setInfoPage, authLoading } = useApp();
@@ -16,6 +17,7 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '', role: authRole });
   const [error, setError] = useState('');
+  const [forgot, setForgot] = useState(false);
   const [pendingGoogle, setPendingGoogle] = useState(null);
   const [googlePassword, setGooglePassword] = useState('');
   const [googleRevision, setGoogleRevision] = useState(0);
@@ -52,6 +54,7 @@ export default function AuthPage() {
     <header className="auth-header"><button className="auth-brand" onClick={() => setCurrentView('homepage')} aria-label={t('backHome')}><img src={logo} alt="Sifit" /></button><div><LanguageSwitch /><button className="auth-header-switch" onClick={changeMode}>{isLogin ? t('signup') : t('login')}</button></div></header>
     <div className="auth-layout"><section className="auth-panel">
       <div className="auth-form-container"><p className="eyebrow green">SIFIT / WEAR YOUR STYLE</p><h1>{isLogin ? t('welcomeBack') : t('authTitle')}</h1><p className="auth-description">{isLogin ? t('loginDescription') : t('authDescription')}</p>
+        {isLogin && <div className="space-y-3 mb-4"><button type="button" onClick={() => setForgot(value => !value)}>{forgot ? 'Đóng khôi phục mật khẩu' : 'Quên mật khẩu?'}</button>{forgot && <EmailRequest />}</div>}
         {!isLogin && <label className="google-signup-role">{t('role')}<select aria-label={t('role')} disabled={authLoading || !!pendingGoogle} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}><option value="buyer">{t('buyer')}</option><option value="seller">{t('seller')}</option></select></label>}
         <GoogleSignIn onCredential={credential => googleSignIn(credential)} disabled={authLoading || !!pendingGoogle} revision={googleRevision} />
         {pendingGoogle && <form className="google-link-form" onSubmit={event => { event.preventDefault(); googleSignIn(pendingGoogle, googlePassword); }}>

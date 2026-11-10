@@ -17,8 +17,9 @@ import { adminSections } from '../constants/adminNavigation';
 import Icon from '../components/Icon';
 import { getApiErrorMessage } from '../utils/errorHandler';
 import AdminSellerVerifications from '../components/AdminSellerVerifications';
+import AdminOperations from './AdminOperations';
 
-const extendedTabs = [['verifications', 'Xác minh shop'], ['product-reports', 'Báo cáo sản phẩm'], ['sellers', 'Cửa hàng'], ['categories', 'Danh mục'], ['reviews', 'Đánh giá'], ['shipments', 'Vận chuyển'], ['finance', 'Tài chính'], ['analytics', 'Báo cáo & CSV'], ['audit', 'Nhật ký']];
+const extendedTabs = [['operations', 'Operations'], ['verifications', 'Xác minh shop'], ['product-reports', 'Báo cáo sản phẩm'], ['sellers', 'Cửa hàng'], ['categories', 'Danh mục'], ['reviews', 'Đánh giá'], ['shipments', 'Vận chuyển'], ['finance', 'Tài chính'], ['analytics', 'Báo cáo & CSV'], ['audit', 'Nhật ký']];
 
 export default function AdminHub({ tab, setTab, onBusyChange }) {
   const { fetchListings, openResource } = useApp();
@@ -53,6 +54,7 @@ export default function AdminHub({ tab, setTab, onBusyChange }) {
     <div className="admin-page-heading"><div><p className="admin-eyebrow">SIFIT / TRUNG TÂM QUẢN TRỊ</p><h1>{tab === 'overview' ? 'Tổng quan quản trị' : adminSections.find(([key]) => key === tab)?.[1]}</h1><p>{adminSections.find(([key]) => key === tab)?.[3]}</p></div>{!extendedTabs.some(([key]) => key === tab) && <button className="admin-refresh" disabled={busy} onClick={() => run(reload)}><Icon name="refresh" />Làm mới</button>}</div>
     {tab === 'finance' && <AdminFinance refundContext={refundContext} clearRefundContext={() => setRefundContext(null)} />}
     {tab === 'verifications' && <AdminSellerVerifications />}
+    {tab === 'operations' && <AdminOperations />}
     {['sellers', 'reviews'].includes(tab) && <AdminManagement key={tab} section={tab} />}
     {tab === 'categories' && <AdminCategories />}
     {tab === 'shipments' && <ShipmentOperations admin />}

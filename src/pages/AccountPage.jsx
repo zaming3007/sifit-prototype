@@ -1,5 +1,6 @@
 ﻿import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { EmailRequest } from '../components/EmailAccountActions';
 import { useLanguage } from '../context/LanguageContext';
 import { Panel, Field, Feedback } from '../components/MarketplaceUI';
 import { useAction } from '../hooks/useAction';
@@ -103,6 +104,7 @@ export default function AccountPage({ section = 'all' }) {
         <div className="profile-edit-actions"><button type="submit" className="btn-primary" disabled={busy || !dirty}><Icon name="task_alt" />{text('Lưu thay đổi', 'Save changes')}</button><button type="button" className="profile-reset" disabled={busy || !dirty} onClick={() => { setForm({ fullName: user.name, phone: user.phone || '' }); setError(''); setNotice(''); }}>{text('Hủy thay đổi', 'Discard changes')}</button></div>
       </form></Panel>
     </div>}
+    {section === 'profile' && !user.emailVerified && <Panel title="Xác minh email"><EmailRequest verification /></Panel>}
     {section !== 'profile' && user.hasPassword === false && <Panel title="Đăng nhập bằng Google"><p>Tài khoản này đăng nhập bằng Google và chưa có mật khẩu Sifit. Để đổi mật khẩu đăng nhập, hãy quản lý mật khẩu trong tài khoản Google của bạn.</p></Panel>}
     {section !== 'profile' && user.hasPassword !== false && <div className="member-password-layout"><aside className="member-security-note"><span className="member-feature-icon"><Icon name="verified_user" /></span><h2>Bảo mật tài khoản</h2><p>Sử dụng mật khẩu riêng cho tài khoản Sifit.</p><p>Sau khi đổi mật khẩu thành công, bạn sẽ được đăng xuất để đăng nhập lại.</p></aside><Panel title="Cập nhật mật khẩu"><form className="space-y-4" onSubmit={event => { event.preventDefault(); run(async () => { await authService.changePassword(passwords); await logoutUser(); }); }}>
       <Field label="Mật khẩu hiện tại"><input className="input-field" type="password" autoComplete="current-password" required value={passwords.currentPassword} onChange={e => setPasswords({ ...passwords, currentPassword: e.target.value })} /></Field>
