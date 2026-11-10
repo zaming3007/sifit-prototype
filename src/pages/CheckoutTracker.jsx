@@ -81,6 +81,10 @@ export default function CheckoutTracker({ historyOnly = false }) {
       const result = await createOrder({ shippingAddress: address, idempotencyKey: attempt.current.key, offerIds });
       if (!result.success) throw new Error(result.message);
       setCreated(result.data); setCheckoutProduct(null); setTab('orders');
+      if (import.meta.env.VITE_DEMO_MODE === 'true') {
+        setPaymentError('Đơn thử nghiệm đã được lưu. Bản giới thiệu chưa mở thanh toán; không cần chuyển tiền.');
+        return;
+      }
       try { setCheckoutPayment(await paymentService.createPayment({ checkoutGroupId: idOf(result.data), idempotencyKey: crypto.randomUUID() })); setPaymentError(''); }
       catch (cause) { setPaymentError(getApiErrorMessage(cause)); }
     });

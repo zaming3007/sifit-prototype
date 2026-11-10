@@ -57,7 +57,8 @@ const copy = {
   addToCart: ['Add to bag', 'Thêm vào giỏ'], details: ['View piece', 'Xem sản phẩm'],
   serviceText: ['Discover pre-loved fashion, list your wardrobe, and connect directly with sellers.', 'Khám phá đồ second-hand, đăng bán tủ đồ và trò chuyện trực tiếp với người bán.'],
   strongPasswordHint: ['8+ characters, uppercase, lowercase, number and symbol', '8+ ký tự, chữ hoa/thường, số và ký tự đặc biệt'],
-  legalText: ['Sifit stores accounts, listings and orders on its server. Payments, shipping and seller verification currently use test providers. Contact Sifit for service details.', 'Sifit lưu tài khoản, sản phẩm và đơn hàng trên hệ thống. Thanh toán, vận chuyển và xác minh người bán hiện sử dụng nhà cung cấp thử nghiệm. Liên hệ Sifit để biết chi tiết dịch vụ.'],
+  legalText: ['Sifit is currently an academic demonstration. Use test information and do not upload identity documents or sensitive personal data. Accounts, listings, messages and orders are stored on the server; images use Cloudinary. The demonstration is not an invitation to transfer money. Contact the project team about stored test data.', 'Sifit hiện là bản giới thiệu phục vụ học tập. Vui lòng dùng thông tin thử nghiệm, không tải giấy tờ tùy thân hoặc dữ liệu cá nhân nhạy cảm. Tài khoản, sản phẩm, tin nhắn và đơn hàng được lưu trên máy chủ; ảnh sử dụng Cloudinary. Bản giới thiệu không yêu cầu chuyển tiền. Liên hệ nhóm dự án khi cần xử lý dữ liệu thử nghiệm đã lưu.'],
+  demoReturnPolicy: ['Orders in this academic demonstration are for testing. Do not ship goods or transfer money. The dispute and return screens demonstrate a workflow; contact the project team if a real transaction was made by mistake.', 'Đơn hàng trong bản giới thiệu học tập dùng để thử nghiệm. Không gửi hàng hoặc chuyển tiền. Các màn hình khiếu nại và trả hàng minh họa quy trình; hãy liên hệ nhóm dự án nếu có giao dịch thật phát sinh ngoài ý muốn.'],
 };
 
 const LanguageContext = createContext(null);

@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // Only copy the files used by this branch; preserve old local AI assets on disk.
+  publicDir: false,
   server: { headers: { 'Cross-Origin-Opener-Policy': 'same-origin-allow-popups' } },
   preview: { headers: { 'Cross-Origin-Opener-Policy': 'same-origin-allow-popups' } },
 })

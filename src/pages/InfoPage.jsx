@@ -6,7 +6,7 @@ export default function InfoPage() {
   const { t } = useLanguage();
   const [feedback, setFeedback] = useState('');
   const privacyPage = ['privacyChoices', 'doNotSell'].includes(infoPage);
-  const known = ['about', 'services', 'resaleService', 'legal', 'termsUse', 'privacy', 'contact', 'ourImpact', 'accessibility', 'privacyChoices', 'doNotSell', 'sizeGuide', 'sitemap'];
+  const known = ['about', 'services', 'resaleService', 'legal', 'termsUse', 'privacy', 'returnPolicy', 'contact', 'ourImpact', 'accessibility', 'privacyChoices', 'doNotSell', 'sizeGuide', 'sitemap'];
   const removeEmail = () => {
     try { localStorage.removeItem('sifit-newsletter-email'); setFeedback('emailRemoved'); }
     catch { setFeedback('newsletterStorageError'); }
@@ -15,6 +15,7 @@ export default function InfoPage() {
     {infoPage === 'about' && <><p>{t('aboutText')}</p><p>{t('mission')}</p></>}
     {['services', 'resaleService'].includes(infoPage) && <><p>{t('serviceText')}</p><button className="editorial-button" onClick={() => setCurrentView('sell')}>{t('waysToSell')}</button></>}
     {['legal', 'termsUse', 'privacy'].includes(infoPage) && <p>{t('legalText')}</p>}
+    {infoPage === 'returnPolicy' && <p>{t('demoReturnPolicy')}</p>}
     {infoPage === 'contact' && <><p>{t('connect')}</p><a href="mailto:cdr.jsc@gmail.com">cdr.jsc@gmail.com</a><a href="tel:+84364478680">(+84)36-4478-680</a></>}
     {infoPage === 'ourImpact' && <><p>{t('impactText')}</p><p>{t('mission')}</p></>}
     {infoPage === 'accessibility' && <><p>{t('screenReaderHelp')}</p><a href="tel:+84364478680">(+84)36-4478-680</a><a href="mailto:cdr.jsc@gmail.com">cdr.jsc@gmail.com</a></>}

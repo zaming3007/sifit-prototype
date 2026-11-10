@@ -3,8 +3,8 @@ import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import CategoryIcon from '../components/CategoryIcon';
 import Icon from '../components/Icon';
-import bannerOne from '../image/banner/banner (1).png';
-import bannerTwo from '../image/banner/banner (2).png';
+import bannerOne from '../image/banner/banner (1).webp';
+import bannerTwo from '../image/banner/banner (2).webp';
 
 const sections = [['what-to-send', 'whatToSend'], ['earnings', 'earnings'], ['what-to-expect', 'whatToExpect'], ['faqs', 'faqs']];
 const steps = [['stepPrepare', 'stepPrepareText', 'checkroom'], ['stepChoose', 'stepChooseText', 'edit_square'], ['stepMatch', 'stepMatchText', 'local_shipping'], ['stepEarn', 'stepEarnText', 'payments']];

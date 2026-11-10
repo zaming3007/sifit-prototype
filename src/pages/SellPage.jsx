@@ -1,8 +1,8 @@
 ﻿import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import Icon from '../components/Icon';
-import wardrobe from '../image/banner/banner (1).png';
-import dressing from '../image/banner/banner (2).png';
+import wardrobe from '../image/banner/banner (1).webp';
+import dressing from '../image/banner/banner (2).webp';
 
 export default function SellPage() {
   const { openSellGuide, setInfoPage, setCurrentView, user, openAuth } = useApp();

@@ -6,9 +6,9 @@ import { getApiErrorMessage } from '../utils/errorHandler';
 import CategoryIcon from '../components/CategoryIcon';
 import ProductCard from '../components/ProductCard';
 import Icon from '../components/Icon';
-import hero from '../image/banner/sifitherobanner.png';
-import wardrobe from '../image/banner/banner (1).png';
-import styleEdits from '../image/banner/sifit-style-edits.png';
+import hero from '../image/banner/sifitherobanner.webp';
+import wardrobe from '../image/banner/banner (1).webp';
+import styleEdits from '../image/banner/sifit-style-edits.webp';
 
 const categoryIcons = { ao: 'tops', quan: 'pants', vay: 'skirts', dam: 'dresses', 'ao-khoac': 'jackets', 'giay-dep': 'shoes', 'tui-xach': 'bags', 'phu-kien': 'allClothing' };
 const edits = [

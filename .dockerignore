@@ -1,0 +1,16 @@
+*
+!package.json
+!package-lock.json
+!index.html
+!vite.config.js
+!postcss.config.js
+!tailwind.config.js
+!src/
+!src/**
+!scripts/
+!scripts/build.mjs
+!public/
+!public/favicon.svg
+!public/icons.svg
+!deploy/
+!deploy/Caddyfile

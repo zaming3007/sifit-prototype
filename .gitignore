@@ -15,6 +15,11 @@ artifacts/
 .env
 .env.*
 !.env.example
+!deploy/.env.example
+
+# Local assets/data retained from the AI branch; excluded from this release.
+/public/vision/
+/server/
 
 # Editor directories and files
 .vscode/*

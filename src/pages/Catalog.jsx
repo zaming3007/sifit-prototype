@@ -7,7 +7,7 @@ import { normalizeProduct, sizeFromApi, sizeToApi } from '../utils/normalizers';
 import { Pager } from '../components/OperationsUI';
 import ProductCard from '../components/ProductCard';
 import Icon from '../components/Icon';
-import editorial from '../image/banner/sifit-style-edits.png';
+import editorial from '../image/banner/sifit-style-edits.webp';
 
 const aliases = { dresses: ['dam', 'vay'], tops: ['ao'], pants: ['quan'], skirts: ['chan vay', 'vay'], jackets: ['ao khoac'], shoes: ['giay dep', 'giay'], bags: ['tui xach', 'tui'], clothing: ['ao', 'quan', 'vay', 'dam', 'ao khoac'], allClothing: ['ao', 'quan', 'vay', 'dam', 'ao khoac'] };
 const normalize = value => (value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').toLowerCase();

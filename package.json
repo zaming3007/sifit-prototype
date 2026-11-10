@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "lint": "oxlint",
+    "build": "node scripts/build.mjs",
+    "lint": "oxlint src scripts vite.config.js",
     "preview": "vite preview",
     "test:ui": "node scripts/verify-api-integration.mjs",
     "test:selling": "node scripts/verify-selling.mjs",
@@ -14,7 +14,8 @@
     "test:returns": "node scripts/verify-dispute-returns.mjs",
     "test:payment-exceptions": "node scripts/verify-payment-exceptions.mjs",
     "test:verification": "node scripts/verify-seller-verification.mjs",
-    "test:integration": "node scripts/verify-api-integration.mjs"
+    "test:integration": "node scripts/verify-api-integration.mjs",
+    "test:release": "node scripts/verify-release.mjs"
   },
   "dependencies": {
     "axios": "^1.20.0",
