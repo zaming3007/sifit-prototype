@@ -1,6 +1,6 @@
 /* Storefront styles follow selling.css so page styles cannot enlarge the header. */
-.sifit-icon { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; font-size: 20px; line-height: 1; flex-shrink: 0; }
-.sifit-icon svg { display: block; }
+.sifit-icon { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; line-height: 1; flex-shrink: 0; font-size: inherit; }
+.sifit-icon svg { display: inline-block; width: 1em; height: 1em; }
 .storefront-refresh, .home-refresh, .footer-refresh { font-family: 'Be Vietnam Pro', system-ui, sans-serif; }
 .storefront-refresh .wide-container, .home-refresh .wide-container, .footer-refresh .wide-container { width: min(100% - 96px, 1320px); }
 .storefront-refresh { box-shadow: 0 1px 0 #e5e9e2; }

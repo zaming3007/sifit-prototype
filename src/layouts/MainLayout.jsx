@@ -23,6 +23,7 @@ import InfoPage from '../pages/InfoPage';
 import SellPage from '../pages/SellPage';
 import CleanOutGuide from '../pages/CleanOutGuide';
 import NotificationsPage, { WishlistPage } from '../pages/NotificationsPage';
+import ActionToastCenter from '../components/ActionToastCenter';
 import { useApp } from '../context/AppContext';
 
 const AdminHub = lazy(() => import('../pages/AdminHub'));
@@ -86,17 +87,20 @@ export default function MainLayout() {
   };
 
   if (user?.role === 'seller' && !authLoading) return <SellerWorkspace activeTab={sellerTab} onSelectTab={setSellerTab}>
+    <ActionToastCenter />
     {dataError && <div role="alert" className="seller-global-error"><p>{dataError}</p><button onClick={() => setDataError('')}>Đóng</button></div>}
     <main className="workspace-screen"><Suspense fallback={<p role="status" className="p-8">Đang mở trang…</p>}>{renderView()}</Suspense></main>
   </SellerWorkspace>;
 
   if (user?.role === 'admin' && !authLoading) return <AdminWorkspace activeTab={adminTab} onSelectTab={setAdminTab} busy={adminBusy}>
+    <ActionToastCenter />
     {dataError && <div role="alert" className="admin-global-error"><p>{dataError}</p><button onClick={() => setDataError('')}>Đóng</button></div>}
     <main><Suspense fallback={<p role="status">Đang mở trang…</p>}>{renderView()}</Suspense></main>
   </AdminWorkspace>;
 
   return (
-    <div className="flex flex-col min-h-screen bg-transparent text-[#17221e]">
+    <div className={`${!portal && currentView !== 'auth' ? 'store-app-shell ' : ''}flex flex-col min-h-screen bg-transparent text-[#17221e]`}>
+      <ActionToastCenter />
       {!authLoading && currentView !== 'auth' && (portal ? <PortalHeader /> : <Navbar />)}
       {currentView !== 'auth' && dataError && <div role="alert" className="px-6 py-3 bg-red-50 text-red-700 flex flex-wrap gap-3"><p>{dataError}</p><button onClick={reloadPublicData}>Thử tải lại</button><button onClick={() => setDataError('')}>Đóng</button></div>}
       {currentView !== 'auth' && !portal && publicLoading && <p role="status" className="px-6 py-2">Đang tải sản phẩm…</p>}

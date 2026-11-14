@@ -11,6 +11,7 @@ import { collectPages } from '../services/pagination';
 import { getApiErrorMessage } from '../utils/errorHandler';
 import { normalizeMessage } from '../utils/normalizers';
 import { connectRealtime } from '../services/realtimeService';
+import { notifyAction } from '../utils/actionNotifier';
 
 const AppContext = createContext();
 export const AppContextProvider = ({ children }) => {
@@ -19,6 +20,12 @@ export const AppContextProvider = ({ children }) => {
   const currentUserRole = user?.role;
   const syncUserProfile = useCallback(profile => {
     setUser(previous => previous && previous._id === profile._id ? { ...previous, ...profile } : previous);
+    notifyAction({
+      category: 'profile',
+      title: 'Đã cập nhật hồ sơ cá nhân',
+      message: `Thông tin của ${profile?.name || 'bạn'} đã được đồng bộ.`,
+      icon: 'person',
+    });
   }, []);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState('');
@@ -126,10 +133,22 @@ export const AppContextProvider = ({ children }) => {
       const result = await authService.login({ email, password });
       sessionRef.current += 1; setUser(result.user);
       setCurrentView(result.user.role === 'admin' ? 'admin' : result.user.role === 'seller' ? 'seller' : 'homepage');
+      notifyAction({
+        category: 'auth',
+        title: 'Đăng nhập thành công',
+        message: `Chào mừng ${result.user.name} quay trở lại SiFit!`,
+        icon: 'verified_user',
+      });
       return { success: true, data: result.user };
     } catch (error) {
       const message = error.response?.status === 401 ? 'Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.' : getApiErrorMessage(error);
-      setAuthError(message); return { success: false, message };
+      setAuthError(message);
+      notifyAction({
+        category: 'error',
+        title: 'Đăng nhập chưa thành công',
+        message,
+      });
+      return { success: false, message };
     } finally { setAuthLoading(false); }
   };
   const loginGoogleUser = async options => {
@@ -138,6 +157,12 @@ export const AppContextProvider = ({ children }) => {
       const result = await authService.googleLogin(options);
       sessionRef.current += 1; setUser(result.user);
       setCurrentView(result.user.role === 'admin' ? 'admin' : result.user.role === 'seller' ? 'seller' : 'homepage');
+      notifyAction({
+        category: 'auth',
+        title: 'Đăng nhập Google thành công',
+        message: `Xin chào ${result.user.name}!`,
+        icon: 'verified_user',
+      });
       return { success: true, data: result.user };
     } catch (error) {
       const linkRequired = error.response?.data?.errors?.some(item => item.code === 'GOOGLE_LINK_REQUIRED');
@@ -147,13 +172,35 @@ export const AppContextProvider = ({ children }) => {
   const registerUser = async (name, email, password, role) => {
     try {
       await authService.register({ name, email, password, role });
+      notifyAction({
+        category: 'auth',
+        title: 'Đăng ký tài khoản thành công',
+        message: `Tài khoản ${name} đã được khởi tạo tại SiFit.`,
+        icon: 'task_alt',
+      });
       const result = await loginUser(email, password);
       return result;
-    } catch (error) { return { success: false, message: getApiErrorMessage(error) }; }
+    } catch (error) {
+      const message = getApiErrorMessage(error);
+      notifyAction({
+        category: 'error',
+        title: 'Đăng ký chưa thành công',
+        message,
+      });
+      return { success: false, message };
+    }
   };
   const logoutUser = async () => {
     try { await authService.logout(); } catch (error) { setDataError(getApiErrorMessage(error)); }
-    finally { sessionRef.current += 1; setUser(null); setActiveChatId(null); setCheckoutProduct(null); setCurrentView('homepage'); }
+    finally {
+      sessionRef.current += 1; setUser(null); setActiveChatId(null); setCheckoutProduct(null); setCurrentView('homepage');
+      notifyAction({
+        category: 'auth',
+        title: 'Đã đăng xuất tài khoản',
+        message: 'Hẹn gặp lại bạn trong phiên mua sắm tiếp theo.',
+        icon: 'logout',
+      });
+    }
   };
   const syncCart = data => {
     const items = (data?.items || []).filter(item => item.product).map(item => ({ ...item.product, available: item.available }));
@@ -232,12 +279,45 @@ export const AppContextProvider = ({ children }) => {
   const addToCart = async product => {
     if (!user) { openAuth(); return; }
     if (user.role !== 'buyer') return { success: false };
-    try { syncCart(await cartService.addItem(product._id)); return { success: true }; }
-    catch (error) { alert(getApiErrorMessage(error)); return { success: false }; }
+    try {
+      syncCart(await cartService.addItem(product._id));
+      notifyAction({
+        category: 'cart',
+        title: 'Đã thêm vào giỏ hàng',
+        message: `${product.title || 'Món đồ'} đã có mặt trong giỏ hàng của bạn.`,
+        icon: 'add_shopping_cart',
+      });
+      return { success: true };
+    } catch (error) {
+      notifyAction({
+        category: 'error',
+        title: 'Không thể thêm vào giỏ hàng',
+        message: getApiErrorMessage(error),
+      });
+      return { success: false };
+    }
   };
   const removeFromCart = async id => {
-    try { syncCart(await cartService.removeItem(id)); return { success: true }; }
-    catch (error) { alert(getApiErrorMessage(error)); return { success: false }; }
+    const removedItem = cart.find(item => item._id === id);
+    try {
+      syncCart(await cartService.removeItem(id));
+      notifyAction({
+        category: 'cart',
+        title: 'Đã xóa khỏi giỏ hàng',
+        message: removedItem?.title
+          ? `Đã gỡ "${removedItem.title}" khỏi giỏ hàng.`
+          : 'Món đồ đã được gỡ khỏi giỏ hàng của bạn.',
+        icon: 'delete',
+      });
+      return { success: true };
+    } catch (error) {
+      notifyAction({
+        category: 'error',
+        title: 'Không thể xóa khỏi giỏ hàng',
+        message: getApiErrorMessage(error),
+      });
+      return { success: false };
+    }
   };
   const handleInstantBuy = async product => {
     if (!user) { openAuth(); return; }
@@ -252,8 +332,22 @@ export const AppContextProvider = ({ children }) => {
       const results = await Promise.allSettled([fetchOrders(), cartService.getCart().then(syncCart), fetchListings()]);
       const failed = results.find(result => result.status === 'rejected');
       if (failed) setDataError(getApiErrorMessage(failed.reason));
+      notifyAction({
+        category: 'order',
+        title: 'Đặt hàng thành công',
+        message: 'Đơn mua của bạn đã được khởi tạo. Vui lòng kiểm tra thông tin thanh toán.',
+        icon: 'receipt_long',
+      });
       return { success: true, data: checkout };
-    } catch (error) { return { success: false, message: getApiErrorMessage(error) }; }
+    } catch (error) {
+      const message = getApiErrorMessage(error);
+      notifyAction({
+        category: 'error',
+        title: 'Đặt hàng chưa thành công',
+        message,
+      });
+      return { success: false, message };
+    }
   };
   const startChat = async product => {
     if (!user) { openAuth(); return; }
@@ -263,13 +357,39 @@ export const AppContextProvider = ({ children }) => {
       setChats(prev => [chat, ...prev.filter(item => item._id !== chat._id)]);
       window.dispatchEvent(new Event('sifit:conversations'));
       setActiveChatId(chat._id); setCurrentView('chat');
-    } catch (error) { alert(getApiErrorMessage(error)); }
+      notifyAction({
+        category: 'chat',
+        title: 'Đã mở cuộc trò chuyện với Shop',
+        message: `Trao đổi trực tiếp về "${product.title || 'sản phẩm'}" cùng người bán.`,
+        icon: 'forum',
+      });
+    } catch (error) {
+      notifyAction({
+        category: 'error',
+        title: 'Không thể mở trò chuyện',
+        message: getApiErrorMessage(error),
+      });
+    }
   };
   const sendMessage = async (id, content, clientMessageId) => {
     try {
       mergeMessage(await chatService.sendMessage(id, content, clientMessageId));
+      notifyAction({
+        category: 'chat',
+        title: 'Đã gửi tin nhắn',
+        message: content?.slice(0, 80) || 'Tin nhắn đã được chuyển tới người nhận.',
+        icon: 'send',
+        duration: 2400,
+      });
       return { success: true };
-    } catch (error) { alert(getApiErrorMessage(error)); return { success: false }; }
+    } catch (error) {
+      notifyAction({
+        category: 'error',
+        title: 'Chưa gửi được tin nhắn',
+        message: getApiErrorMessage(error),
+      });
+      return { success: false };
+    }
   };
   const toggleWishlist = async product => {
     if (!user) { openAuth(); return; }
@@ -278,7 +398,21 @@ export const AppContextProvider = ({ children }) => {
       const exists = wishlist.some(item => item.productId === product._id);
       const result = await (exists ? wishlistService.removeItem(product._id) : wishlistService.addItem(product._id));
       setWishlist(result.items);
-    } catch (error) { alert(getApiErrorMessage(error)); }
+      notifyAction({
+        category: 'wishlist',
+        title: exists ? 'Đã bỏ khỏi Yêu thích' : 'Đã lưu vào Yêu thích',
+        message: exists
+          ? `Đã gỡ "${product.title || 'món đồ'}" khỏi danh sách yêu thích.`
+          : `Đã lưu "${product.title || 'món đồ'}" vào tủ đồ yêu thích của bạn.`,
+        icon: 'favorite',
+      });
+    } catch (error) {
+      notifyAction({
+        category: 'error',
+        title: 'Không thể cập nhật Yêu thích',
+        message: getApiErrorMessage(error),
+      });
+    }
   };
   const viewShopProfile = sellerId => { setCurrentSellerId(sellerId); setCurrentViewRaw('shop'); window.history.pushState({ view: 'shop' }, '', '?view=shop&sellerId=' + encodeURIComponent(sellerId)); window.scrollTo({ top: 0, behavior: 'instant' }); };
   const [productReviews, setProductReviews] = useState({});

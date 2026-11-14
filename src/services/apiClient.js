@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from '../constants/apiEndpoints';
+import { notifyFromApiMutation } from '../utils/actionNotifier';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '/api/v1' : 'http://localhost:5000/api/v1');
 
@@ -54,7 +55,10 @@ apiClient.interceptors.request.use(config => {
 });
 
 apiClient.interceptors.response.use(
-  response => response,
+  response => {
+    notifyFromApiMutation(response.config, response);
+    return response;
+  },
   async error => {
     const originalRequest = error.config;
     const status = error.response?.status;

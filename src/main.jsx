@@ -18,6 +18,8 @@ import './following.css';
 import './offers.css';
 import './shop-profile.css';
 import './seller-verification.css';
+import './modern.css';
+import './pin-fashion.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

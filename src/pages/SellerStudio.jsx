@@ -10,6 +10,7 @@ import SellerOperations from './SellerOperations';
 import OffersPage from './OffersPage';
 import { useAction } from '../hooks/useAction';
 import { money, idOf } from '../utils/marketplace';
+import { notifyAction } from '../utils/actionNotifier';
 
 import * as productService from '../services/productService';
 import * as sellerService from '../services/sellerService';
@@ -46,10 +47,37 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
   const [addresses, setAddresses] = useState([]);
   const [form, setForm] = useState(empty);
   const [files, setFiles] = useState([]);
+  const [filePreviews, setFilePreviews] = useState([]);
   const [editing, setEditing] = useState(null);
   const [savedProduct, setSavedProduct] = useState(null);
   const { busy, error, run } = useAction();
   const [notice, setNotice] = useState('');
+
+  useEffect(() => {
+    const urls = files.map(file => ({
+      name: file.name,
+      sizeKb: Math.max(1, Math.round(file.size / 1024)),
+      url: URL.createObjectURL(file),
+    }));
+    setFilePreviews(urls);
+    return () => {
+      urls.forEach(item => URL.revokeObjectURL(item.url));
+    };
+  }, [files]);
+
+  const handleSelectFiles = event => {
+    const chosen = Array.from(event.target.files || []);
+    if (!chosen.length) return;
+    const uploadedCount = savedProduct?.images?.length || 0;
+    const maxRemaining = Math.max(0, 8 - uploadedCount);
+    setFiles(prev => [...prev, ...chosen].slice(0, maxRemaining));
+    event.target.value = '';
+  };
+
+  const removeSelectedFile = index => {
+    setFiles(prev => prev.filter((_, idx) => idx !== index));
+  };
+
   const refreshProducts = useCallback(async () => setProducts((await collectPages(productService.listMyProducts)).items), []);
   const refreshOrders = useCallback(async () => setOrders((await collectPages(sellerService.listSellerOrders)).items), []);
   const loadProfile = useCallback(async () => {
@@ -85,10 +113,18 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
         product = await productService.uploadImages(product._id, files);
         setSavedProduct(product); setFiles([]);
       }
-      await refreshProducts(); setNotice('Đã lưu bản nháp. Chọn Gửi duyệt khi sản phẩm đã có ảnh.');
+      await refreshProducts();
+      notifyAction('shop', `Đã lưu sản phẩm "${product.title}" (${product.images?.length || 0} ảnh).`);
+      setNotice('Đã lưu bản nháp và tải ảnh thành công. Chọn "Gửi bản đã lưu để duyệt" để đưa lên sàn.');
     });
   };
-  const submit = product => run(async () => { await productService.submitProduct(product._id); await refreshProducts(); setNotice('Đã gửi sản phẩm để kiểm duyệt.'); setTab('listings'); });
+  const submit = product => run(async () => {
+    await productService.submitProduct(product._id);
+    await refreshProducts();
+    notifyAction('shop', `Đã gửi duyệt sản phẩm "${product.title}".`);
+    setNotice('Đã gửi sản phẩm để kiểm duyệt.');
+    setTab('listings');
+  });
   return <LocalizedContent><div className="seller-studio" data-section={tab}>
     <div className="seller-page-heading"><div><p className="seller-eyebrow">SIFIT / SELLER STUDIO</p><h1>{sections[tab][0]}</h1><p>{sections[tab][1]}</p></div><div className="seller-page-heading-actions">{tab === 'overview' && <><button className="seller-secondary-button" disabled={busy} onClick={() => run(reload)}><Icon name="refresh" />Làm mới</button><button className="seller-primary-button" disabled={busy} onClick={newDraft}><Icon name="add_box" />Tạo sản phẩm mới</button></>}</div></div>
     <Feedback busy={busy} error={error} />{notice && <p role="status" className="p-3 bg-green-50 rounded-xl">{notice}</p>}
@@ -123,10 +159,82 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
         <Field label="Kích thước"><select className="input-field" value={form.size} onChange={event => setForm({ ...form, size: event.target.value })}>{['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Freesize'].map(value => <option key={value}>{value}</option>)}</select></Field>
         <Field label="Tình trạng"><select className="input-field" value={form.condition} onChange={event => setForm({ ...form, condition: Number(event.target.value) })}>{[[100, 'Mới có nhãn'], [95, 'Như mới'], [85, 'Tốt'], [65, 'Đã qua sử dụng nhiều']].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></Field>
         {['brand', 'color'].map(key => <Field key={key} label={key === 'brand' ? 'Thương hiệu' : 'Màu sắc'}><input className="input-field" value={form[key]} onChange={event => setForm({ ...form, [key]: event.target.value })} /></Field>)}</div>
-        <Field label="Ảnh JPEG, PNG hoặc WebP (tối đa 8 ảnh, 5 MB mỗi ảnh)"><input key={`${editing}-${savedProduct?.images.length || 0}`} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={event => setFiles([...event.target.files])} /></Field>
+        <Field label="Ảnh JPEG, PNG hoặc WebP (tối đa 8 ảnh, 5 MB mỗi ảnh)">
+          <input
+            key={`${editing}-${savedProduct?.images?.length || 0}`}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            onChange={handleSelectFiles}
+          />
+        </Field>
+        {filePreviews.length > 0 && (
+          <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-bold text-amber-900">
+                Ảnh mới đã chọn ({filePreviews.length} tệp) — Bấm &ldquo;Lưu bản nháp và tải ảnh&rdquo; để lưu lên sản phẩm
+              </p>
+              <button
+                type="button"
+                onClick={() => setFiles([])}
+                className="text-xs font-semibold text-amber-800 hover:underline cursor-pointer"
+              >
+                Bỏ chọn tất cả
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {filePreviews.map((item, idx) => (
+                <div key={`${item.name}-${idx}`} className="w-24 bg-white border border-amber-200 rounded-xl p-1.5 shadow-2xs flex flex-col gap-1">
+                  <img src={item.url} alt={item.name} className="w-full h-20 object-cover rounded-lg" />
+                  <p className="text-[10px] text-gray-600 truncate" title={item.name}>{item.name}</p>
+                  <button
+                    type="button"
+                    onClick={() => removeSelectedFile(idx)}
+                    className="text-[11px] font-bold text-red-600 hover:bg-red-50 rounded-md py-0.5 cursor-pointer"
+                  >
+                    Bỏ chọn
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <button disabled={busy} className="btn-primary">Lưu bản nháp và tải ảnh</button>
       </form>
-      {savedProduct && <div className="space-y-3"><div className="flex flex-wrap gap-3">{savedProduct.imageAssets.map(asset => <div key={asset.publicId}><img src={asset.url} alt="" className="w-24 h-24 object-cover rounded-xl" /><button disabled={busy} onClick={() => run(async () => { setSavedProduct(await productService.deleteImage(savedProduct._id, asset.publicId)); await refreshProducts(); })}>Xóa ảnh</button></div>)}</div><button disabled={busy || !savedProduct.images.length} onClick={() => submit(savedProduct)}>Gửi bản đã lưu để duyệt</button></div>}
+      {savedProduct && (
+        <div className="space-y-3 pt-4 border-t border-gray-200/80">
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-600">
+            Ảnh đã lưu trên sản phẩm ({savedProduct.imageAssets?.length || 0}/8)
+          </p>
+          {savedProduct.imageAssets?.length > 0 ? (
+            <div className="flex flex-wrap gap-3">
+              {savedProduct.imageAssets.map(asset => (
+                <div key={asset.publicId} className="w-28 bg-white border border-gray-200 rounded-xl p-1.5 shadow-2xs flex flex-col gap-1.5">
+                  <img src={asset.url} alt="" className="w-full h-24 object-cover rounded-lg" />
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() =>
+                      run(async () => {
+                        setSavedProduct(await productService.deleteImage(savedProduct._id, asset.publicId));
+                        await refreshProducts();
+                      })
+                    }
+                    className="text-xs font-bold text-red-600 hover:bg-red-50 rounded-md py-1 cursor-pointer"
+                  >
+                    Xóa ảnh
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500">Chưa có ảnh nào được tải lên. Hãy chọn file ảnh phía trên rồi bấm &ldquo;Lưu bản nháp và tải ảnh&rdquo;.</p>
+          )}
+          <button disabled={busy || !savedProduct.images?.length} onClick={() => submit(savedProduct)} className="btn-primary">
+            Gửi bản đã lưu để duyệt
+          </button>
+        </div>
+      )}
     </Panel>}
     {tab === 'orders' && <OverdueOrders />}
     {tab === 'orders' && <div className="seller-orders-list space-y-4"><div className="seller-orders-toolbar"><span><strong>{orders.length}</strong> đơn bán</span><button className="seller-secondary-button" disabled={busy} onClick={() => run(refreshOrders)}><Icon name="refresh" />Làm mới đơn bán</button></div>{!orders.length && <div className="seller-empty-state"><span><Icon name="receipt_long" /></span><h3>Chưa có đơn bán.</h3><p>Đơn hàng của khách sẽ xuất hiện tại đây.</p></div>}{orders.map(order => <OrderCard key={order._id} order={order} seller addresses={addresses} onChange={refreshOrders} />)}</div>}

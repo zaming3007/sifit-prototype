@@ -1,4 +1,4 @@
-﻿import { useApp } from '../context/AppContext';
+import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import Icon from '../components/Icon';
 import wardrobe from '../image/banner/banner (1).webp';
