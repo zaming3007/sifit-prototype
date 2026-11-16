@@ -1,6 +1,6 @@
 import { build, loadEnv } from 'vite';
 import { existsSync } from 'node:fs';
-import { copyFile, mkdir } from 'node:fs/promises';
+import { copyFile, mkdir, cp } from 'node:fs/promises';
 
 // A local development .env must never silently put localhost into a release.
 const productionEnv = existsSync('.env.production') || existsSync('.env.production.local')
@@ -24,3 +24,4 @@ if (process.env.VITE_SOCKET_URL && !publicHTTPS(process.env.VITE_SOCKET_URL)) {
 await build();
 await mkdir('dist', { recursive: true });
 for (const asset of ['favicon.svg', 'icons.svg']) await copyFile(`public/${asset}`, `dist/${asset}`);
+await cp('node_modules/@mediapipe/tasks-vision/wasm', 'dist/vision/wasm', { recursive: true });
