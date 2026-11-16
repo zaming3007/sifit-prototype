@@ -315,7 +315,7 @@ export default function NotificationsPage() {
                     ['messageNotifications', 'Tin nhắn', 'forum'],
                     ['orderNotifications', 'Đơn hàng', 'receipt_long'],
                     ['productNotifications', 'Sản phẩm mới & gợi ý', 'sparkles'],
-                    ...(user?.role === 'buyer' ? [['followedShopNotifications', 'Sản phẩm từ shop theo dõi', 'storefront']] : []),
+                    ...(['buyer', 'seller'].includes(user?.role) ? [['followedShopNotifications', 'Sản phẩm từ shop theo dõi', 'storefront']] : []),
                     ['shippingNotifications', 'Vận chuyển & giao hàng', 'local_shipping'],
                     ['reviewNotifications', 'Đánh giá & phản hồi', 'star'],
                     ['payoutNotifications', 'Thu nhập & chi trả', 'account_balance_wallet'],

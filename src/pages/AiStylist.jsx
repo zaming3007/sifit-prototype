@@ -9,7 +9,6 @@ import '../stylist-production.css';
 
 const ongoing = job => job && ['queued', 'running', 'attention'].includes(job.status);
 const message = error => error.response?.data?.message || error.message || 'Chưa kết nối được. Vui lòng thử lại.';
-const engineCost = (product, engine) => engine === 'max' || /shoe|footwear|accessor|giày|giay|dép|dep|túi|phụ kiện/i.test(product.category || '') ? 2 : 1;
 
 export default function AiStylist() {
   const { user, openAuth, products, cart, browse, tryOnProduct } = useApp();
@@ -30,7 +29,7 @@ export default function AiStylist() {
   const fileInput = useRef(null);
   const zoomDialog = useRef(null);
   const [selection, setSelection] = useState(() => tryOnProduct ? [tryOnProduct._id] : []);
-  const [engine, setEngine] = useState('v1.6');
+  const engine = 'outfit';
   const [consent, setConsent] = useState(false);
   const [job, setJob] = useState(null);
   const [result, setResult] = useState('');
@@ -46,8 +45,8 @@ export default function AiStylist() {
   const userId = user?._id;
   const running = ongoing(job);
   const terminalId = job && !running ? job.id : null;
-  const maxItems = engine === 'outfit' ? 4 : 3;
-  const cost = engine === 'outfit' ? (selection.length ? 2 : 0) : candidates.filter(p => selection.includes(p._id)).reduce((total, p) => total + engineCost(p, engine), 0);
+  const maxItems = 4;
+  const cost = selection.length;
   const cartIds = new Set(cart.map(p => p._id));
   const available = candidates.filter(p => p.status === 'active' && p.images?.length && (source !== 'cart' || cartIds.has(p._id)) && p.title.toLocaleLowerCase('vi').includes(search.toLocaleLowerCase('vi')));
 
@@ -174,5 +173,5 @@ export default function AiStylist() {
     if (file) await savePortrait(userId, { file, photoMode, backgroundId, measurements }).then(() => setMeasurementsSaved(true)).catch(() => setError('Chưa lưu được số đo trên thiết bị.'));
     else setError('Chọn ảnh trước khi lưu hồ sơ số đo.');
   };
-  return <StylistClassicView {...{ user, openAuth, state, file, preview, prepared, photoMode, setPhotoMode, backgroundId, setBackgroundId, photoBusy, photoSaved, setPhotoSaved, comparison, setComparison, zoom, setZoom, helpOpen, setHelpOpen, measurements, setMeasurements, measurementsSaved, setMeasurementsSaved, fileInput, zoomDialog, consent, setConsent, job, setJob, result, busy, error, setError, connection, elapsed, source, setSource, search, setSearch, running, locked, displayResult, imageUrl, available, selection, setSelection, engine, setEngine, maxItems, cost, requestId, toggle, submit, remove, persistPhoto, chooseFile, clearPhoto, saveMeasurements, browse }} />;
+  return <StylistClassicView {...{ user, openAuth, state, file, preview, prepared, photoMode, setPhotoMode, backgroundId, setBackgroundId, photoBusy, photoSaved, setPhotoSaved, comparison, setComparison, zoom, setZoom, helpOpen, setHelpOpen, measurements, setMeasurements, measurementsSaved, setMeasurementsSaved, fileInput, zoomDialog, consent, setConsent, job, setJob, result, busy, error, setError, connection, elapsed, source, setSource, search, setSearch, running, locked, displayResult, imageUrl, available, selection, setSelection, maxItems, cost, requestId, toggle, submit, remove, persistPhoto, chooseFile, clearPhoto, saveMeasurements, browse }} />;
 }

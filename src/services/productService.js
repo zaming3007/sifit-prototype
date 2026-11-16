@@ -41,6 +41,7 @@ export async function createProduct(data) {
 
 export async function updateProduct(id, data) {
   const payload = {};
+  if (data.imageOrder !== undefined) payload.imageOrder = data.imageOrder;
   if (data.title !== undefined) payload.title = data.title;
   if (data.description !== undefined || data.defects !== undefined) payload.description = data.description || data.defects;
   if (data.price !== undefined) payload.price = Number(data.price);

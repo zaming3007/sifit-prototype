@@ -120,8 +120,21 @@ try {
   await expect(sell.locator('.store-header')).toHaveCount(0);
   await expect(sell.getByRole('button', { name: 'Yêu thích', exact: true })).toHaveCount(0);
   await sell.goto(`${base}/?view=checkout`);
-  await expect(sell).toHaveURL(/view=seller/);
+  await expect(sell).toHaveURL(/view=checkout/);
+  await expect(sell.locator('.store-header')).toBeVisible();
   await sell.reload();
+  await expect(sell).toHaveURL(/view=checkout/);
+  await sell.goto(`${base}/?view=seller`);
+  await sell.getByRole('button', { name: 'Về trang chủ mua sắm', exact: true }).click();
+  await expect(sell).toHaveURL(/view=homepage/);
+  await expect(sell.locator('.store-header')).toBeVisible();
+  await sell.goto(`${base}/?view=catalog`);
+  const otherShopItem = sell.locator('.product-card').filter({ hasText: 'Integration Jacket 2' });
+  await otherShopItem.locator('.product-quick-add').click();
+  await expect.poll(async () => (await requireBackend('./src/models/cart.model').findOne({ userId: seller._id }))?.items.length).toBe(1);
+  await sell.evaluate(async () => (await import('/src/services/cartService.js')).clearCart());
+  await sell.getByRole('button', { name: 'Tài khoản Seller Integration', exact: true }).click();
+  await sell.getByRole('button', { name: 'Kênh người bán', exact: true }).click();
   await expect(sell.getByRole('heading', { name: 'Kênh người bán', exact: true })).toBeVisible();
   await expect(sell.getByRole('navigation', { name: 'Quản lý cửa hàng', exact: true })).toBeVisible();
   await expect(sell.getByRole('button', { name: 'Tổng quan', exact: true })).toHaveAttribute('aria-current', 'page');
@@ -160,9 +173,18 @@ try {
   await sell.locator('input[type=file]').setInputFiles([
     { name: 'jacket.png', mimeType: 'image/png', buffer: png }, { name: 'extra.png', mimeType: 'image/png', buffer: png },
   ]);
+  await sell.getByRole('button', { name: 'Dùng ảnh 2 làm ảnh bìa', exact: true }).click();
+  await expect(sell.locator('form .image-order-controls').first()).toContainText('Ảnh bìa');
+  await expect(sell.locator('form').getByTitle('extra.png')).toBeVisible();
   await sell.getByRole('button', { name: 'Lưu bản nháp và tải ảnh' }).click();
   await expect(sell.getByRole('button', { name: 'Gửi bản đã lưu để duyệt' })).toBeEnabled();
   await expect.poll(async () => (await Product.findOne({ title: 'Integration Published Jacket' }))?.images.length).toBe(2);
+  const beforeOrder = (await Product.findOne({ title: 'Integration Published Jacket' })).images.map(image => image.publicId);
+  await sell.getByRole('button', { name: 'Dùng ảnh 2 làm ảnh bìa', exact: true }).click();
+  await expect.poll(async () => (await Product.findOne({ title: 'Integration Published Jacket' }))?.images[0].publicId).toBe(beforeOrder[1]);
+  await sell.reload();
+  await sell.getByRole('button', { name: 'Sản phẩm', exact: true }).click();
+  await sell.locator('.seller-product-row').filter({ hasText: 'Integration Published Jacket' }).getByRole('button', { name: 'Sửa / quản lý ảnh', exact: true }).click();
   await sell.getByRole('button', { name: 'Xóa ảnh', exact: true }).first().click();
   await expect.poll(async () => {
     const alert = await sell.getByRole('alert').allTextContents();

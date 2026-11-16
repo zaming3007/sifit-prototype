@@ -6,6 +6,7 @@ import AddressBook from '../components/AddressBook';
 import OrderCard from '../components/OrderCard';
 import { Panel, Field, Feedback } from '../components/MarketplaceUI';
 import Icon from '../components/Icon';
+import ImageOrderControls from '../components/ImageOrderControls';
 import SellerOperations from './SellerOperations';
 import OffersPage from './OffersPage';
 import { useAction } from '../hooks/useAction';
@@ -20,6 +21,11 @@ import { verificationLabels } from '../utils/sellerVerification';
 import { collectPages } from '../services/pagination';
 
 const empty = { title: '', description: '', price: '', categoryId: '', size: 'M', brand: '', condition: 85, color: '' };
+const moveImage = (items, from, to) => {
+  const next = [...items];
+  next.splice(to, 0, ...next.splice(from, 1));
+  return next;
+};
 const sections = {
   overview: ['Kênh người bán', 'Theo dõi hoạt động cửa hàng và những việc cần làm, ở cùng một nơi.'],
   listings: ['Quản lý sản phẩm', 'Quản lý những món đồ trong shop, cập nhật bản nháp và gửi duyệt.'],
@@ -77,6 +83,12 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
   const removeSelectedFile = index => {
     setFiles(prev => prev.filter((_, idx) => idx !== index));
   };
+  const reorderSavedImages = (from, to) => run(async () => {
+    const imageOrder = moveImage(savedProduct.imageAssets, from, to).map(image => image.publicId);
+    setSavedProduct(await productService.updateProduct(savedProduct._id, { imageOrder }));
+    await refreshProducts();
+    setNotice('Đã lưu thứ tự ảnh. Ảnh đầu tiên là ảnh bìa.');
+  });
 
   const refreshProducts = useCallback(async () => setProducts((await collectPages(productService.listMyProducts)).items), []);
   const refreshOrders = useCallback(async () => setOrders((await collectPages(sellerService.listSellerOrders)).items), []);
@@ -187,6 +199,7 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
                 <div key={`${item.name}-${idx}`} className="w-24 bg-white border border-amber-200 rounded-xl p-1.5 shadow-2xs flex flex-col gap-1">
                   <img src={item.url} alt={item.name} className="w-full h-20 object-cover rounded-lg" />
                   <p className="text-[10px] text-gray-600 truncate" title={item.name}>{item.name}</p>
+                  <ImageOrderControls index={idx} count={filePreviews.length} offset={savedProduct?.images?.length || 0} disabled={busy} onMove={(from, to) => setFiles(current => moveImage(current, from, to))} />
                   <button
                     type="button"
                     onClick={() => removeSelectedFile(idx)}
@@ -208,9 +221,10 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
           </p>
           {savedProduct.imageAssets?.length > 0 ? (
             <div className="flex flex-wrap gap-3">
-              {savedProduct.imageAssets.map(asset => (
+              {savedProduct.imageAssets.map((asset, idx) => (
                 <div key={asset.publicId} className="w-28 bg-white border border-gray-200 rounded-xl p-1.5 shadow-2xs flex flex-col gap-1.5">
                   <img src={asset.url} alt="" className="w-full h-24 object-cover rounded-lg" />
+                  <ImageOrderControls index={idx} count={savedProduct.imageAssets.length} disabled={busy} onMove={reorderSavedImages} />
                   <button
                     type="button"
                     disabled={busy}

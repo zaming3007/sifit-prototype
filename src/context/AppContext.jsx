@@ -223,7 +223,7 @@ export const AppContextProvider = ({ children }) => {
     setCart([]); setOrders([]); setChats([]); setMessages({}); setWishlist([]); setChatCursors({});
     if (!currentUserId) return;
     let cancelled = false;
-    const jobs = currentUserRole === 'buyer' ? [
+    const jobs = ['buyer', 'seller'].includes(currentUserRole) ? [
       cartService.getCart().then(data => { if (!cancelled) syncCart(data); }),
       collectPages(orderService.listMyOrders).then(data => { if (!cancelled) setOrders(data.items); }),
       collectPages(chatService.listConversations).then(data => { if (!cancelled) setChats(data.items); }),
@@ -279,7 +279,7 @@ export const AppContextProvider = ({ children }) => {
   };
   const addToCart = async product => {
     if (!user) { openAuth(); return; }
-    if (user.role !== 'buyer') return { success: false };
+    if (!['buyer', 'seller'].includes(user.role)) return { success: false };
     try {
       syncCart(await cartService.addItem(product._id));
       notifyAction({
@@ -322,7 +322,7 @@ export const AppContextProvider = ({ children }) => {
   };
   const handleInstantBuy = async product => {
     if (!user) { openAuth(); return; }
-    if (user.role !== 'buyer') return;
+    if (!['buyer', 'seller'].includes(user.role)) return;
     if (!cart.some(item => item._id === product._id) && !(await addToCart(product))?.success) return;
     setCheckoutProduct(product); setCurrentView('checkout');
   };
@@ -352,7 +352,7 @@ export const AppContextProvider = ({ children }) => {
   };
   const startChat = async product => {
     if (!user) { openAuth(); return; }
-    if (user.role !== 'buyer') return;
+    if (!['buyer', 'seller'].includes(user.role)) return;
     try {
       const chat = await chatService.createConversation(product._id);
       setChats(prev => [chat, ...prev.filter(item => item._id !== chat._id)]);
@@ -394,7 +394,7 @@ export const AppContextProvider = ({ children }) => {
   };
   const toggleWishlist = async product => {
     if (!user) { openAuth(); return; }
-    if (user.role !== 'buyer') return;
+    if (!['buyer', 'seller'].includes(user.role)) return;
     try {
       const exists = wishlist.some(item => item.productId === product._id);
       const result = await (exists ? wishlistService.removeItem(product._id) : wishlistService.addItem(product._id));

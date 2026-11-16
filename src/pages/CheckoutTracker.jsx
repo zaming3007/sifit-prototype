@@ -59,7 +59,7 @@ export default function CheckoutTracker({ historyOnly = false }) {
   const cartSignature = cart.map(item => item._id).sort().join(',');
 
   useEffect(() => {
-    if (user.role !== 'buyer' || !cartSignature) { setAcceptedOffers([]); setOffersLoading(false); return; }
+    if (!['buyer', 'seller'].includes(user.role) || !cartSignature) { setAcceptedOffers([]); setOffersLoading(false); return; }
     let live = true; setOffersLoading(true); setOffersError('');
     collectPages(params => offerService.listMyOffers({ ...params, status: 'ACCEPTED' })).then(result => {
       if (live) { setAcceptedOffers(result.items); setOffersLoading(false); }

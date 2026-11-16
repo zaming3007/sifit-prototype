@@ -13,7 +13,7 @@ const conditionLabel = (percent, locale) => {
 export default function ProductCard({ product }) {
   const { openProduct, addToCart, user, openAuth, wishlist, toggleWishlist } = useApp();
   const { t, locale } = useLanguage();
-  const canBuy = !user || user.role === 'buyer';
+  const canBuy = !user || ['buyer', 'seller'].includes(user.role);
   const [failedImage, setFailedImage] = useState(null);
   const image = product.images?.[0];
   const isWishlisted = wishlist.some(item => item.productId === product._id);

@@ -13,3 +13,9 @@
   .storefront-refresh .store-topbar-brand .store-vnav-brand-text{display:none}
   .storefront-refresh .logout-link{display:none}
 }
+
+.image-order-controls{display:grid;gap:4px;text-align:center;font-size:11px;color:#315644}
+.image-order-controls>div{display:flex;justify-content:center;gap:6px}
+.image-order-controls button{border:1px solid #dce5dc;border-radius:6px;padding:4px;background:#f5f8f3;min-height:28px}
+.image-order-controls button:disabled{opacity:.35;cursor:default}
+.image-order-controls .sifit-icon{font-size:15px}

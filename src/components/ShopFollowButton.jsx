@@ -14,12 +14,12 @@ export default function ShopFollowButton({ shop }) {
   const id = shop.id || shop._id;
   useEffect(() => {
     const controller = new AbortController(); setLoading(true); setLoadError(''); setNotice('');
-    const request = user?.role === 'buyer' ? api.getState(id, controller.signal) : api.count(id, controller.signal);
+    const request = ['buyer', 'seller'].includes(user?.role) ? api.getState(id, controller.signal) : api.count(id, controller.signal);
     request.then(result => { if (!controller.signal.aborted) setState({ following: false, notifyNewProducts: true, ...result }); }).catch(cause => { if (!controller.signal.aborted) setLoadError(getApiErrorMessage(cause)); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [id, user?._id, user?.role, revision]);
   return <div className="shop-follow-controls"><span className="shop-follower-count">{loading ? 'Đang tải lượt theo dõi…' : `${state.followerCount} người theo dõi`}</span>
-    {(!user || user.role === 'buyer') && <><button className={`shop-follow-button ${state.following ? 'is-following' : ''}`} disabled={busy || loading || !!loadError} aria-pressed={state.following} onClick={() => {
+    {(!user || ['buyer', 'seller'].includes(user.role)) && <><button className={`shop-follow-button ${state.following ? 'is-following' : ''}`} disabled={busy || loading || !!loadError} aria-pressed={state.following} onClick={() => {
       if (!user) { openAuth(); return; }
       run(async () => { const next = await (state.following ? api.unfollow(id) : api.follow(id)); setState(next); setNotice(next.following ? 'Đã theo dõi cửa hàng.' : 'Đã bỏ theo dõi cửa hàng.'); });
     }}><Icon name={state.following ? 'task_alt' : 'add'} />{state.following ? 'Đang theo dõi' : 'Theo dõi shop'}</button>

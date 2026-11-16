@@ -64,10 +64,17 @@ try {
   await expect(page.getByRole('heading', { name: 'AI Stylist' })).toBeVisible();
   await expect(page.getByRole('tab', { name: 'Trong giỏ', exact: true })).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('.tryon-product')).toHaveCount(1);
+  await expect(page.locator('.stylist-engine-control')).toHaveCount(0);
   await page.locator('input[type=file]').setInputFiles({ name: 'portrait.png', mimeType: 'image/png', buffer: portrait });
   await page.locator('.stylist-product-select').click();
   await expect(page.locator('.stylist-photo > img')).toBeVisible();
   expect((await page.locator('.stylist-photo').boundingBox()).width).toBeGreaterThan(400);
+  expect((await page.locator('.stylist-photo').boundingBox()).height).toBeLessThan(750);
+  await page.setViewportSize({ width: 1440, height: 760 });
+  const photoBounds = await page.locator('.stylist-photo').boundingBox();
+  expect(photoBounds.y + photoBounds.height).toBeLessThanOrEqual(760);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await expect(page.locator('.stylist-try-footer > strong')).toHaveText('1 món đã chọn · 1 credit');
   await page.getByRole('button', { name: 'Xóa phông / Đổi nền', exact: true }).click();
   await expect(page.locator('.stylist-photo[aria-busy=false]')).toBeVisible({ timeout: 60000 });
   await page.locator('.stylist-background-picker summary').click();
@@ -94,6 +101,9 @@ try {
   await page.screenshot({ path: 'artifacts/stylist-production/desktop.png', fullPage: true });
   await page.locator('.tryon-controls .tryon-primary').click();
   await expect(page.locator('.stylist-processing [role=progressbar]')).toBeVisible();
+  await expect(page.locator('.stylist-eta')).toContainText('Dự kiến còn khoảng');
+  expect((await Job.findOne()).engine).toBe('outfit');
+  expect((await Job.findOne()).cost).toBe(1);
   await page.reload();
   await expect(page.locator('.stylist-processing [role=progressbar]')).toBeVisible();
   await page.screenshot({ path: 'artifacts/stylist-production/processing.png', fullPage: true });

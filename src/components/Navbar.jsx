@@ -194,6 +194,7 @@ export default function Navbar() {
   };
 
   const buyerWorkspaceLinks = [
+    ...(user?.role === 'seller' ? [['seller', 'Kênh người bán', 'storefront', null]] : []),
     ['checkout', 'Đơn mua & giỏ hàng', 'receipt_long', cart.length > 0 ? cart.length : null],
     ['chat', 'Chat', 'chat_bubble_outline', null],
     ['wishlist', 'Yêu thích', 'favorite_border', null],

@@ -15,7 +15,7 @@ export default function AddressBook({ onChange }) {
   const [editing, setEditing] = useState(null);
   const [adding, setAdding] = useState(false);
   const [notice, setNotice] = useState('');
-  const addressType = user.role === 'buyer' ? 'SHIPPING' : user.role === 'seller' ? 'PICKUP' : 'BOTH';
+  const addressType = user.role === 'buyer' ? 'SHIPPING' : 'BOTH';
   let nextNumber = 1;
   while (items.some(item => item.label === `Địa chỉ ${nextNumber}`)) nextNumber += 1;
   const nextLabel = `Địa chỉ ${nextNumber}`;

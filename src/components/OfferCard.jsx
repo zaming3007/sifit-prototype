@@ -24,7 +24,7 @@ export default function OfferCard({ offer, onChange, showHistory = false }) {
   const expired = offer.open && new Date(offer.expiresAt).getTime() <= now;
   const status = expired ? 'EXPIRED' : offer.effectiveStatus;
   const actionable = offer.actionable && !expired;
-  const seller = user.role === 'seller';
+  const seller = idOf(offer.sellerId) === user._id;
 
   return (
     <article className="offer-card bg-white rounded-3xl p-5 border border-gray-100 shadow-sm space-y-4" data-offer-id={idOf(offer)}>

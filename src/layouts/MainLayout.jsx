@@ -33,12 +33,13 @@ const ResourcePage = lazy(() => import('../pages/ResourcePage'));
 
 export default function MainLayout() {
   const { currentView, setCurrentView, user, authLoading, openAuth, dataError, setDataError, publicLoading, reloadPublicData } = useApp();
-  const portal = user && user.role !== 'buyer';
+  const sellerWorkspace = user?.role === 'seller' && ['seller', 'chat', 'notifications', 'account', 'account-profile', 'report-history', 'resource'].includes(currentView);
+  const portal = user?.role === 'admin' || sellerWorkspace;
   const [sellerTab, setSellerTab] = useState('overview');
   const [adminTab, setAdminTab] = useState('overview');
   const [adminBusy, setAdminBusy] = useState(false);
   const home = user?.role === 'admin' ? 'admin' : user?.role === 'seller' ? 'seller' : 'homepage';
-  const allowed = user?.role === 'seller' ? ['seller', 'chat', 'notifications', 'account', 'account-profile', 'report-history', 'payment-result', 'history', 'detail', 'shop', 'resource']
+  const allowed = user?.role === 'seller' ? ['seller', 'homepage', 'catalog', 'ai-stylist', 'checkout', 'wishlist', 'offers', 'following', 'sell', 'sell-guide', 'info', 'account-addresses', 'account-password', 'chat', 'notifications', 'account', 'account-profile', 'report-history', 'payment-result', 'history', 'detail', 'shop', 'resource']
     : user?.role === 'admin' ? ['admin', 'chat', 'notifications', 'account', 'account-profile', 'history', 'detail', 'shop', 'resource'] : null;
   const forbidden = currentView !== 'account-action' && user && (allowed ? !allowed.includes(currentView) : ['seller', 'admin', 'history'].includes(currentView));
   useEffect(() => {
@@ -86,7 +87,7 @@ export default function MainLayout() {
     }
   };
 
-  if (user?.role === 'seller' && !authLoading) return <SellerWorkspace activeTab={sellerTab} onSelectTab={setSellerTab}>
+  if (sellerWorkspace && !authLoading) return <SellerWorkspace activeTab={sellerTab} onSelectTab={setSellerTab}>
     <ActionToastCenter />
     {dataError && <div role="alert" className="seller-global-error"><p>{dataError}</p><button onClick={() => setDataError('')}>Đóng</button></div>}
     <main className="workspace-screen"><Suspense fallback={<p role="status" className="p-8">Đang mở trang…</p>}>{renderView()}</Suspense></main>

@@ -110,7 +110,7 @@ export default function ProductDetail() {
               />
 
               {/* Wishlist floating button */}
-              {user?.role !== 'seller' && (
+              {user?.role !== 'admin' && (
                 <button
                   type="button"
                   className={`absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer shadow-md border ${
@@ -262,13 +262,13 @@ export default function ProductDetail() {
 
             {/* Action buttons */}
             <div className="space-y-3 mb-6">
-              {!isSold && (!user || user.role === 'buyer') && <button className="tryon-detail-button" onClick={() => { setTryOnProduct(selectedProduct); setCurrentView('ai-stylist'); }}><Icon name="auto_awesome" />Thử món đồ này với AI<Icon name="arrow_forward" /></button>}
+              {!isSold && (!user || ['buyer', 'seller'].includes(user.role)) && <button className="tryon-detail-button" onClick={() => { setTryOnProduct(selectedProduct); setCurrentView('ai-stylist'); }}><Icon name="auto_awesome" />Thử món đồ này với AI<Icon name="arrow_forward" /></button>}
               {isSold ? (
                 <div className="bg-gray-100 border border-gray-200 p-5 rounded-2xl text-center">
                   <p className="text-sm font-black text-gray-900 uppercase tracking-wider">Sản phẩm hiện không khả dụng</p>
                   <p className="text-xs text-gray-500 mt-1.5">Hàng 2hand — chỉ có 1 chiếc duy nhất. Hãy dạo shop để tìm món đồ tương tự nhé!</p>
                 </div>
-              ) : isSeller || (user && user.role !== 'buyer') ? (
+              ) : isSeller || (user && !['buyer', 'seller'].includes(user.role)) ? (
                 <div className="bg-gray-100 p-4 rounded-2xl text-center border border-gray-200">
                   <p className="text-sm font-bold text-gray-900">Không thể thực hiện mua hàng</p>
                   <p className="text-xs text-gray-500 mt-1">

@@ -36,6 +36,7 @@ export default function SellerWorkspace({ activeTab, onSelectTab, children }) {
         {collapsed ? <span className="seller-brand-mark"><Icon name="checkroom" /></span> : <><img src={logo} alt="Sifit" /><span>SELLER STUDIO</span></>}
       </button>
       <div className="seller-sidebar-scroll">
+        <nav className="seller-navigation" aria-label="Mua sắm"><button onClick={() => setCurrentView('homepage')} title={collapsed ? 'Về trang chủ mua sắm' : undefined}><Icon name="storefront" /><span className="seller-nav-label">Về trang chủ mua sắm</span></button></nav>
         <p className="seller-nav-caption">QUẢN LÝ CỬA HÀNG</p>
         <nav className="seller-navigation" aria-label="Quản lý cửa hàng">{sellerSections.map(([id, label, icon]) => <button key={id} aria-label={label} title={collapsed ? label : undefined} aria-current={currentView === 'seller' && activeTab === id ? 'page' : undefined} onClick={() => select(id)}><Icon name={icon} /><span className="seller-nav-label">{label}</span>{currentView === 'seller' && activeTab === id && <span className="seller-active-dot" />}</button>)}</nav>
         <p className="seller-nav-caption seller-nav-divider">KẾT NỐI & TÀI KHOẢN</p>
