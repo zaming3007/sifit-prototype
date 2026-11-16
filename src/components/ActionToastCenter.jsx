@@ -64,7 +64,9 @@ export default function ActionToastCenter() {
     };
 
     window.addEventListener('sifit:action-toast', handleToast);
-    return () => window.removeEventListener('sifit:action-toast', handleToast);
+    const clear = () => setToasts([]);
+    window.addEventListener('sifit:action-session-changed', clear);
+    return () => { window.removeEventListener('sifit:action-toast', handleToast); window.removeEventListener('sifit:action-session-changed', clear); };
   }, []);
 
   const dismiss = id => {
@@ -87,7 +89,7 @@ export default function ActionToastCenter() {
         return (
           <div
             key={toast.id}
-            role="status"
+            role={toast.tone === 'red' ? 'alert' : 'status'}
             className={`action-toast-card pointer-events-auto relative overflow-hidden rounded-2xl bg-white/95 backdrop-blur-md border ${style.border} p-3.5 shadow-xl flex items-start gap-3 animate-slide-up transition-all`}
           >
             {/* Category Icon */}

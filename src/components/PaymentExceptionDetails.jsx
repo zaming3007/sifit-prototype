@@ -1,3 +1,4 @@
+import { getApiErrorMessage } from '../utils/errorHandler';
 import { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAction } from '../hooks/useAction';
@@ -15,7 +16,7 @@ export default function PaymentExceptionDetails({ paymentId, onChange }) {
   const [action, setAction] = useState(''); const [note, setNote] = useState(''); const [confirmed, setConfirmed] = useState(false);
   const [notice, setNotice] = useState(''); const attempt = useRef(null); const { busy, error, run } = useAction();
   const load = async () => { const result = await api.get(`/payments/${paymentId}/review`); setRecord(result); setLoadError(''); };
-  useEffect(() => { let live = true; setRecord(null); setLoadError(''); api.get(`/payments/${paymentId}/review`).then(result => { if (live) setRecord(result); }).catch(cause => { if (live) setLoadError(cause.response?.data?.message || 'Không tải được hồ sơ đối soát.'); }); return () => { live = false; }; }, [paymentId]);
+  useEffect(() => { let live = true; setRecord(null); setLoadError(''); api.get(`/payments/${paymentId}/review`).then(result => { if (live) setRecord(result); }).catch(cause => { if (live) setLoadError(getApiErrorMessage(cause) || 'Không tải được hồ sơ đối soát.'); }); return () => { live = false; }; }, [paymentId]);
   useEffect(() => setConfirmed(false), [record?.payment.reviewVersion]);
   const payment = record?.payment;
   const canAccept = payment && !payment.allocatedAmount && payment.availableAmount >= payment.amount && !payment.adjustmentReservedAmount && record.group?.paymentStatus === 'UNPAID';

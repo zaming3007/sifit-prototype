@@ -1,3 +1,4 @@
+import { getApiErrorMessage } from '../utils/errorHandler';
 import React, { useState, useRef, useEffect } from 'react';
 import * as chatService from '../services/chatService';
 import { Feedback } from '../components/MarketplaceUI';
@@ -44,7 +45,7 @@ export default function Chat() {
     if (otherId) {
       chatService.getBlockStatus(otherId)
         .then(value => { if (live) setBlockState({ id: otherId, blocked: value, error: '' }); })
-        .catch(error => { if (live) setBlockState({ id: otherId, blocked: false, error: error.response?.data?.message || 'Không tải được trạng thái chặn. Hãy chọn lại hội thoại.' }); });
+        .catch(error => { if (live) setBlockState({ id: otherId, blocked: false, error: getApiErrorMessage(error) || 'Không tải được trạng thái chặn. Hãy chọn lại hội thoại.' }); });
     }
     return () => { live = false; };
   }, [otherId]);

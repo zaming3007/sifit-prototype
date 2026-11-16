@@ -74,13 +74,22 @@ export const ACTION_CATEGORIES = {
 };
 
 const STORAGE_KEY = 'sifit-action-notifications';
+let historyOwner = 'guest';
+const historyKey = () => `${STORAGE_KEY}:${historyOwner}`;
+export function setActionHistoryUser(id) {
+  const next = id || 'guest';
+  if (next === historyOwner) return;
+  historyOwner = next; lastSignature = ''; lastTimestamp = 0;
+  window.dispatchEvent(new Event('sifit:action-history-updated'));
+  window.dispatchEvent(new Event('sifit:action-session-changed'));
+}
 const MAX_HISTORY = 40;
 let lastSignature = '';
 let lastTimestamp = 0;
 
 export function getActionHistory() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(historyKey());
     const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed) ? parsed : [];
   } catch {
@@ -90,7 +99,7 @@ export function getActionHistory() {
 
 export function clearActionHistory() {
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(historyKey());
   } catch {
     /* ignore */
   }
@@ -99,14 +108,15 @@ export function clearActionHistory() {
   }
 }
 
-export function notifyAction({
-  category = 'cart',
-  title = '',
-  message = '',
-  icon,
-  tone,
-  duration = 3800,
-}) {
+export function notifyAction(input, legacyMessage) {
+  const {
+    category = 'cart',
+    title = '',
+    message = '',
+    icon,
+    tone,
+    duration = 3800,
+  } = typeof input === 'string' ? { category: input, message: legacyMessage } : input || {};
   if (typeof window === 'undefined') return;
 
   const meta = ACTION_CATEGORIES[category] || ACTION_CATEGORIES.cart;
@@ -135,7 +145,7 @@ export function notifyAction({
 
   try {
     const nextHistory = [entry, ...getActionHistory()].slice(0, MAX_HISTORY);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextHistory));
+    localStorage.setItem(historyKey(), JSON.stringify(nextHistory));
   } catch {
     /* ignore quota errors */
   }
@@ -164,6 +174,15 @@ export function notifyFromApiMutation(config, response) {
     url.includes('/read') ||
     url.includes('/messages')
   ) {
+    return;
+  }
+
+  if (url.includes('/admin/')) {
+    notifyAction({ category: 'shop', title: 'Đã lưu thao tác quản trị', message: 'Dữ liệu đã được cập nhật. Bạn có thể kiểm tra lại trạng thái trong danh sách.' });
+    return;
+  }
+  if (/\/follow\/preferences/.test(url)) {
+    notifyAction({ category: 'shop', title: 'Đã lưu tùy chọn theo dõi shop', message: 'Cài đặt thông báo sản phẩm mới đã được cập nhật.' });
     return;
   }
 
@@ -334,8 +353,8 @@ export function notifyFromApiMutation(config, response) {
     } else if (method === 'post') {
       notifyAction({
         category: 'shop',
-        title: 'Đã đăng bán sản phẩm mới',
-        message: 'Món đồ của bạn đã được đưa lên kệ hàng SiFit.',
+        title: url.endsWith('/submit') ? 'Đã gửi sản phẩm để duyệt' : url.endsWith('/images') ? 'Đã tải ảnh sản phẩm' : 'Đã lưu bản nháp sản phẩm',
+        message: url.endsWith('/submit') ? 'Sản phẩm đang chờ quản trị viên xét duyệt trước khi đăng bán.' : 'Sản phẩm được lưu trong kênh bán. Gửi duyệt khi bạn hoàn tất thông tin.',
         icon: 'add_box',
       });
     } else {

@@ -34,7 +34,10 @@ export default function ResourcePage() {
     if (type === 'CONVERSATION') { await fetchChats(); setActiveChatId(id); setCurrentView('chat'); return; }
     if (type === 'PRODUCT') {
       let product;
-      if (user.role === 'seller' || user.role === 'admin') product = normalizeProduct((await api.get(`/${user.role}/products/${id}`)).product);
+      if (user.role === 'seller' || user.role === 'admin') {
+        try { product = normalizeProduct((await api.get(`/${user.role}/products/${id}`)).product); }
+        catch (error) { if (user.role !== 'seller' || ![403, 404].includes(error.response?.status)) throw error; product = await productService.getProduct(id); }
+      }
       else product = await productService.getProduct(id);
       if (!product) throw new Error('Sản phẩm không còn khả dụng hoặc bạn không có quyền xem.');
       return { product };
@@ -49,7 +52,7 @@ export default function ResourcePage() {
   const order = record?.order && normalizeOrder(record.order);
   const review = record?.review;
   return <div className="ops-page"><div className="ops-toolbar"><h1>Chi tiết {({ VERIFICATION: 'hồ sơ xác minh', REFUND: 'khoản hoàn tiền', OFFER: 'đề nghị giá', ORDER: 'đơn hàng', DISPUTE: 'khiếu nại', SHIPMENT: 'vận chuyển', PAYMENT: 'thanh toán', REVIEW: 'đánh giá', PAYOUT: 'chi trả', PRODUCT: 'sản phẩm', CONVERSATION: 'hội thoại', USER: 'tài khoản' })[type] || 'thông báo'}</h1><button disabled={busy || loading} onClick={() => run(refresh)}>Làm mới chi tiết</button><button onClick={() => setCurrentView('notifications')}>Về thông báo</button></div><Feedback busy={busy || loading} error={error || loadError} />
-    {order && (user.role === 'buyer' ? <OrderCard key={order._id} order={order} onChange={refresh} /> : <section className="ops-card"><Facts entries={[[ 'Mã đơn', idOf(order) ], ['Trạng thái', <Status key="status" value={order.orderStatus} />], ['Thanh toán', <Status key="status" value={order.paymentStatus} />], ['Tổng tiền', money(order.totalAmount)]]} />{order.items.map((item, index) => <p key={index}>{item.title} · {money(item.price)}</p>)}<OrderDetails order={order} now={Date.now()} /></section>)}
+    {order && (idOf(order.buyer) === user._id ? <OrderCard key={order._id} order={order} onChange={refresh} /> : <section className="ops-card"><Facts entries={[[ 'Mã đơn', idOf(order) ], ['Trạng thái', <Status key="status" value={order.orderStatus} />], ['Thanh toán', <Status key="status" value={order.paymentStatus} />], ['Tổng tiền', money(order.totalAmount)]]} />{order.items.map((item, index) => <p key={index}>{item.title} · {money(item.price)}</p>)}<OrderDetails order={order} now={Date.now()} /></section>)}
     {record?.shipment && <section className="ops-card"><ShipmentDetails shipment={record.shipment} /><button onClick={() => openResource('ORDER', idOf(record.shipment.orderId))}>Xem đơn hàng</button></section>}
     {record?.offer && <OfferCard offer={record.offer} onChange={() => run(refresh)} showHistory />}
     {record?.refund && <RefundDetails key={idOf(record.refund)} refund={record.refund} onChange={refresh} />}

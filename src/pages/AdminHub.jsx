@@ -19,7 +19,7 @@ import { getApiErrorMessage } from '../utils/errorHandler';
 import AdminSellerVerifications from '../components/AdminSellerVerifications';
 import AdminOperations from './AdminOperations';
 
-const extendedTabs = [['operations', 'Operations'], ['verifications', 'Xác minh shop'], ['product-reports', 'Báo cáo sản phẩm'], ['sellers', 'Cửa hàng'], ['categories', 'Danh mục'], ['reviews', 'Đánh giá'], ['shipments', 'Vận chuyển'], ['finance', 'Tài chính'], ['analytics', 'Báo cáo & CSV'], ['audit', 'Nhật ký']];
+const extendedTabs = [['transactions', 'Transactions'], ['operations', 'Operations'], ['verifications', 'Xác minh shop'], ['product-reports', 'Báo cáo sản phẩm'], ['sellers', 'Cửa hàng'], ['categories', 'Danh mục'], ['reviews', 'Đánh giá'], ['shipments', 'Vận chuyển'], ['finance', 'Tài chính'], ['analytics', 'Báo cáo & CSV'], ['audit', 'Nhật ký']];
 
 export default function AdminHub({ tab, setTab, onBusyChange }) {
   const { fetchListings, openResource } = useApp();
@@ -52,7 +52,7 @@ export default function AdminHub({ tab, setTab, onBusyChange }) {
   const note = item => <input className="input-field max-w-md" placeholder="Lý do / ghi chú xử lý" maxLength="1000" value={notes[idOf(item)] || ''} onChange={event => setNotes({ ...notes, [idOf(item)]: event.target.value })} />;
   return <LocalizedContent><div className="admin-content" data-section={tab}>
     <div className="admin-page-heading"><div><p className="admin-eyebrow">SIFIT / TRUNG TÂM QUẢN TRỊ</p><h1>{tab === 'overview' ? 'Tổng quan quản trị' : adminSections.find(([key]) => key === tab)?.[1]}</h1><p>{adminSections.find(([key]) => key === tab)?.[3]}</p></div>{!extendedTabs.some(([key]) => key === tab) && <button className="admin-refresh" disabled={busy} onClick={() => run(reload)}><Icon name="refresh" />Làm mới</button>}</div>
-    {tab === 'finance' && <AdminFinance refundContext={refundContext} clearRefundContext={() => setRefundContext(null)} />}
+    {['finance', 'transactions'].includes(tab) && <AdminFinance key={tab} refundContext={refundContext} clearRefundContext={() => setRefundContext(null)} />}
     {tab === 'verifications' && <AdminSellerVerifications />}
     {tab === 'operations' && <AdminOperations />}
     {['sellers', 'reviews'].includes(tab) && <AdminManagement key={tab} section={tab} />}

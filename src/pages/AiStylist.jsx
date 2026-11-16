@@ -1,3 +1,4 @@
+import { getApiErrorMessage } from '../utils/errorHandler';
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import * as service from '../services/aiStylistService';
@@ -8,7 +9,7 @@ import '../stylist.css';
 import '../stylist-production.css';
 
 const ongoing = job => job && ['queued', 'running', 'attention'].includes(job.status);
-const message = error => error.response?.data?.message || error.message || 'Chưa kết nối được. Vui lòng thử lại.';
+const message = error => getApiErrorMessage(error) || 'Chưa kết nối được. Vui lòng thử lại.';
 
 export default function AiStylist() {
   const { user, openAuth, products, cart, browse, tryOnProduct } = useApp();

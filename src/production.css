@@ -19,3 +19,18 @@
 .image-order-controls button{border:1px solid #dce5dc;border-radius:6px;padding:4px;background:#f5f8f3;min-height:28px}
 .image-order-controls button:disabled{opacity:.35;cursor:default}
 .image-order-controls .sifit-icon{font-size:15px}
+
+.notification-unread-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:20px;background:#b43e36;color:white;font-size:10px;font-weight:700;line-height:1}
+.notification-local-history>summary{cursor:pointer;font-size:13px;color:#647465;padding:12px 0}
+.member-notification-list .ops-toolbar [aria-pressed=true]{background:#e8f1e5;color:#006c49;border-color:#8ba58c}
+.action-toast-card[role=alert]{border-left:4px solid #c34c42}
+
+.store-notification-bell{position:relative;display:flex;align-items:center;gap:3px;padding:8px;border-radius:50%}
+.finance-search label{display:grid;gap:5px;min-width:0}
+.finance-search input{padding:9px 12px;border:1px solid #d9e2d6;border-radius:8px;max-width:100%;background:white}
+.finance-ledger-lines p{overflow-wrap:anywhere}
+
+.ops-page .finance-search{display:grid;grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr));align-items:end}
+.ops-page .finance-search label{min-width:0;width:100%}
+.ops-page .finance-search input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+@media(max-width:650px){.ops-page .finance-search{grid-template-columns:minmax(0,1fr)}}

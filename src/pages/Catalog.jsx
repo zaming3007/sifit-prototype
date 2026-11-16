@@ -1,3 +1,4 @@
+import { getApiErrorMessage } from '../utils/errorHandler';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useEffect, useState } from 'react';
@@ -29,7 +30,7 @@ export default function Catalog() {
   useEffect(() => {
     const controller = new AbortController();
     api.list('/products/facets', {}, controller.signal).then(setFacets).catch(error => {
-      if (!controller.signal.aborted) setFacetError(error.response?.data?.message || 'Không tải được bộ lọc.');
+      if (!controller.signal.aborted) setFacetError(getApiErrorMessage(error) || 'Không tải được bộ lọc.');
     });
     return () => controller.abort();
   }, [facetRevision]);

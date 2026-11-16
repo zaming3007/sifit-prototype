@@ -11,13 +11,16 @@ import { collectPages } from '../services/pagination';
 import { getApiErrorMessage } from '../utils/errorHandler';
 import { normalizeMessage } from '../utils/normalizers';
 import { connectRealtime } from '../services/realtimeService';
-import { notifyAction } from '../utils/actionNotifier';
+import { notifyAction, setActionHistoryUser } from '../utils/actionNotifier';
+import useNotificationCount from '../hooks/useNotificationCount';
 
 const AppContext = createContext();
 export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const currentUserId = user?._id;
   const currentUserRole = user?.role;
+  const { notificationCount, refreshNotificationCount } = useNotificationCount(currentUserId);
+  useEffect(() => { setActionHistoryUser(currentUserId); }, [currentUserId]);
   const syncUserProfile = useCallback(profile => {
     setUser(previous => previous && previous._id === profile._id ? { ...previous, ...profile } : previous);
     notifyAction({
@@ -448,7 +451,7 @@ export const AppContextProvider = ({ children }) => {
     category: selectedCategory?.name || selectedProduct.category,
     categorySlug: selectedCategory?.slug || selectedProduct.categorySlug };
   return <AppContext.Provider value={{
-    user, syncUserProfile, authLoading, authError, loginUser, loginGoogleUser, registerUser, logoutUser,
+    user, syncUserProfile, authLoading, authError, loginUser, loginGoogleUser, registerUser, logoutUser, notificationCount, refreshNotificationCount,
     currentView, setCurrentView, resourceTarget, openResource, goBack, authMode, authRole, openAuth, browse, infoPage, setInfoPage,
     guideSection, setGuideSection, openSellGuide, products, setProducts, tryOnProduct, setTryOnProduct, apiCategories, fetchListings,
     publicLoading, dataError, setDataError, reloadPublicData, selectedProduct: productWithCategory, openProduct, selectedProductId,

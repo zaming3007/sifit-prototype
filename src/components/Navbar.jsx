@@ -1,3 +1,4 @@
+import NotificationBadge from './NotificationBadge';
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -17,6 +18,7 @@ export default function Navbar() {
     currentView,
     setCurrentView,
     cart,
+    notificationCount,
     user,
     logoutUser,
     searchQuery,
@@ -200,7 +202,7 @@ export default function Navbar() {
     ['wishlist', 'Yêu thích', 'favorite_border', null],
     ['offers', 'Đề nghị giá', 'payments', null],
     ['following', 'Shop đang theo dõi', 'storefront', null],
-    ['notifications', 'Thông báo', 'notifications_none', null],
+    ['notifications', 'Thông báo', 'notifications_none', notificationCount || null],
   ];
 
   return (
@@ -466,6 +468,7 @@ export default function Navbar() {
           </form>
 
           <div className="account-actions flex items-center gap-3 flex-shrink-0">
+            {user && <button className="store-notification-bell" aria-label={text('Mở thông báo', 'Open notifications')} onClick={() => setCurrentView('notifications')}><Icon name="notifications_none" /><NotificationBadge /></button>}
             <button
               className="bag-button relative p-2.5 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
               onClick={() => (user ? setCurrentView('checkout') : openAuth())}
@@ -518,6 +521,7 @@ export default function Navbar() {
                       {buyerWorkspaceLinks.map(([view, label, icon, badge]) => (
                         <button
                           key={view}
+                          aria-label={label}
                           type="button"
                           aria-current={currentView === view ? 'page' : undefined}
                           className={`flex items-center justify-between gap-2.5 px-3 py-2 text-sm rounded-xl text-left transition-colors ${

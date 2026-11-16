@@ -1,3 +1,4 @@
+import { getApiErrorMessage } from '../utils/errorHandler';
 import { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAction } from '../hooks/useAction';
@@ -22,7 +23,7 @@ export default function SellerVerificationDetails({ verificationId, onChange }) 
   const [data, setData] = useState(null), [loadError, setLoadError] = useState(''), [note, setNote] = useState(''), [checked, setChecked] = useState(false), [notice, setNotice] = useState('');
   const { busy, error, run } = useAction();
   const load = async () => { setData(await api.get(`/seller-verifications/${verificationId}`)); setChecked(false); setLoadError(''); setNotice(''); };
-  useEffect(() => { let live = true; setData(null); setLoadError(''); api.get(`/seller-verifications/${verificationId}`).then(result => { if (live) setData(result); }).catch(cause => { if (live) setLoadError(cause.response?.data?.message || 'Không tải được hồ sơ xác minh.'); }); return () => { live = false; }; }, [verificationId]);
+  useEffect(() => { let live = true; setData(null); setLoadError(''); api.get(`/seller-verifications/${verificationId}`).then(result => { if (live) setData(result); }).catch(cause => { if (live) setLoadError(getApiErrorMessage(cause) || 'Không tải được hồ sơ xác minh.'); }); return () => { live = false; }; }, [verificationId]);
   const record = data?.verification;
   const decide = approved => run(async () => { await api.patch(`/admin/seller-verifications/${verificationId}/${approved ? 'approve' : 'reject'}`, { expectedVersion: record.contentVersion || 0, reason: note.trim(), ...(approved ? { checkedDocuments: checked } : {}) }); setNote(''); await load(); await onChange?.(); setNotice(approved ? 'Đã duyệt hồ sơ và thông báo cho shop.' : 'Đã gửi lý do để shop bổ sung hồ sơ.'); });
   return <section className="ops-card verification-details" aria-label="Chi tiết hồ sơ xác minh"><h2>Hồ sơ xác minh shop</h2><Feedback busy={busy || !data && !loadError} error={error || loadError} />{notice && <p role="status">{notice}</p>}<button disabled={busy} onClick={() => run(load)}>Tải lại hồ sơ xác minh</button>

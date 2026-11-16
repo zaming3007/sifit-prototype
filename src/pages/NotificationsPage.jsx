@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import * as notificationService from '../services/notificationService';
-import { collectPages } from '../services/pagination';
+import { Pager } from '../components/OperationsUI';
+import { getApiErrorMessage } from '../utils/errorHandler';
 import LocalizedContent from '../components/LocalizedContent';
 import ProductCard from '../components/ProductCard';
 import { Panel, Feedback } from '../components/MarketplaceUI';
@@ -77,32 +78,48 @@ export default function NotificationsPage() {
   const [items, setItems] = useState([]);
   const [preferences, setPreferences] = useState(null);
   const [count, setCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [readFilter, setReadFilter] = useState('all');
+  const [pagination, setPagination] = useState({});
+  const [loading, setLoading] = useState(true);
+  const revision = useRef(0);
   const [actionLogs, setActionLogs] = useState(getActionHistory);
   const [selectedActionCategory, setSelectedActionCategory] = useState('all');
-  const { busy, error, run } = useAction();
+  const { busy, error, run, setError } = useAction();
 
   const reload = useCallback(async () => {
-    const [result, prefs, unread] = await Promise.all([
-      collectPages(notificationService.listNotifications),
-      notificationService.preferences(),
-      notificationService.unreadCount(),
-    ]);
-    setItems(result.items);
-    setPreferences(prefs);
-    setCount(unread);
-  }, []);
+    const version = ++revision.current;
+    setLoading(true);
+    try {
+      const [result, prefs, unread] = await Promise.all([
+        notificationService.listNotifications({ page, limit: 20, ...(readFilter === 'unread' ? { isRead: false } : {}) }),
+        notificationService.preferences(),
+        notificationService.unreadCount(),
+      ]);
+      if (version !== revision.current) return;
+      if (!result.items.length && page > 1) { setPage(page - 1); return; }
+      setItems(result.items);
+      setPreferences(prefs);
+      setCount(unread);
+      setPagination(result.pagination || {}); setError('');
+    } catch (error) { if (version === revision.current) throw error; }
+    finally { if (version === revision.current) setLoading(false); }
+  }, [page, readFilter, setError]);
 
   useEffect(() => {
-    run(reload);
-    const refresh = () => run(reload);
+    const refresh = () => reload().catch(error => setError(getApiErrorMessage(error)));
+    refresh();
+    const timer = setInterval(() => { if (document.visibilityState !== 'hidden') refresh(); }, 60000);
     const refreshActions = () => setActionLogs(getActionHistory());
     window.addEventListener('sifit:notifications', refresh);
     window.addEventListener('sifit:action-history-updated', refreshActions);
+    const invalidate = () => { ++revision.current; };
     return () => {
+      invalidate(); clearInterval(timer);
       window.removeEventListener('sifit:notifications', refresh);
       window.removeEventListener('sifit:action-history-updated', refreshActions);
     };
-  }, [run, reload]);
+  }, [reload, setError]);
 
   const filteredActionLogs =
     selectedActionCategory === 'all'
@@ -140,10 +157,10 @@ export default function NotificationsPage() {
           </button>
         </BuyerHeading>
 
-        <Feedback busy={busy} error={error} />
+        <Feedback busy={busy || loading} error={error} />
 
         {/* Categorized Action Notifications Section */}
-        <Panel title="Thông báo theo loại thao tác gần đây" icon="sparkles">
+        <details className="notification-local-history"><summary>Lịch sử thao tác trên thiết bị này</summary><Panel title="Thông báo theo loại thao tác gần đây" icon="sparkles">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div className="flex flex-wrap items-center gap-1.5">
               <button
@@ -226,10 +243,11 @@ export default function NotificationsPage() {
               Chưa có thông báo thao tác nào thuộc nhóm này. Mỗi khi bạn thêm giỏ hàng, lưu yêu thích, trả giá, đặt đơn hoặc cập nhật hồ sơ, thông báo tương ứng sẽ xuất hiện tức thì.
             </p>
           )}
-        </Panel>
+        </Panel></details>
 
         <div className="member-notification-layout grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="member-notification-list lg:col-span-2 space-y-3">
+            <div className="ops-toolbar" role="group" aria-label="Lọc thông báo"><button aria-pressed={readFilter === 'all'} onClick={() => { setPage(1); setReadFilter('all'); }}>Tất cả thông báo</button><button aria-pressed={readFilter === 'unread'} onClick={() => { setPage(1); setReadFilter('unread'); }}>Chưa đọc ({count})</button></div>
             {items.map(item => {
               const icon = getNotificationIcon(item.type, item.resourceType);
               return (
@@ -293,7 +311,7 @@ export default function NotificationsPage() {
               );
             })}
 
-            {!items.length && !busy && (
+            {!items.length && !busy && !loading && !error && (
               <div className="member-empty p-12 bg-white rounded-3xl border border-gray-100 text-center flex flex-col items-center justify-center gap-2">
                 <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 mb-1">
                   <Icon name="notifications_none" className="text-2xl" />
@@ -302,6 +320,7 @@ export default function NotificationsPage() {
                 <p className="text-xs text-gray-400">Bạn sẽ nhận được thông báo khi có cập nhật về đơn hàng, đề nghị giá hoặc tin nhắn.</p>
               </div>
             )}
+            <Pager resource={{ pagination, page, setPage, busy: busy || loading }} />
           </div>
 
           {/* Preferences Aside */}

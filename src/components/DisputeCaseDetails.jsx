@@ -1,3 +1,4 @@
+import { getApiErrorMessage } from '../utils/errorHandler';
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import * as api from '../services/operationsService';
@@ -18,7 +19,7 @@ export default function DisputeCaseDetails({ dispute, onChange }) {
   const [file, setFile] = useState(null); const [caption, setCaption] = useState(''); const [category, setCategory] = useState('GENERAL');
   const [previews, setPreviews] = useState({}); const previewUrls = useRef({}); const mounted = useRef(false);
   const [fileRevision, setFileRevision] = useState(0);
-  useEffect(() => { let live = true; setFileError(''); api.get(`/disputes/${id}/evidence`).then(result => { if (live) setFiles(result.items); }).catch(cause => { if (live) setFileError(cause.response?.data?.message || 'Không tải được danh sách bằng chứng.'); }); return () => { live = false; }; }, [id, fileRevision]);
+  useEffect(() => { let live = true; setFileError(''); api.get(`/disputes/${id}/evidence`).then(result => { if (live) setFiles(result.items); }).catch(cause => { if (live) setFileError(getApiErrorMessage(cause) || 'Không tải được danh sách bằng chứng.'); }); return () => { live = false; }; }, [id, fileRevision]);
   useEffect(() => { mounted.current = true; const urls = previewUrls.current; return () => { mounted.current = false; Object.values(urls).forEach(url => URL.revokeObjectURL(url)); }; }, []);
   const refresh = async () => { await onChange(); messages.reload(); setFileRevision(value => value + 1); };
   const canEdit = canContribute(dispute); const independentAdmin = user.role === 'admin' && ![idOf(dispute.buyerId), idOf(dispute.sellerId)].includes(user._id);

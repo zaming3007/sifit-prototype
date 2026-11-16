@@ -26,7 +26,11 @@ export function connectRealtime({ onMessage, onReconnect, onNotifications }) {
     onNotifications?.();
     onReconnect(); joinRooms();
   });
-  socket.on('connect', () => { onReconnect(); joinRooms(); });
+  socket.on('notification:count', payload => {
+    window.dispatchEvent(new CustomEvent('sifit:notification-count', { detail: payload }));
+    window.dispatchEvent(new Event('sifit:notifications'));
+  });
+  socket.on('connect', () => { onReconnect(); joinRooms(); window.dispatchEvent(new Event('sifit:notifications')); });
   window.addEventListener('sifit:conversations', joinRooms);
   socket.on('conversation:updated', onReconnect);
   socket.on('connect_error', async error => {

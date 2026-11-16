@@ -2,6 +2,7 @@ import axios from 'axios';
 import { API_ENDPOINTS } from '../constants/apiEndpoints';
 import { notifyFromApiMutation } from '../utils/actionNotifier';
 import { startActivity, finishActivity } from '../utils/apiActivity';
+import { showError } from '../utils/errorHandler';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '/api/v1' : 'http://localhost:5000/api/v1');
 
@@ -76,6 +77,7 @@ apiClient.interceptors.response.use(
     ].some(endpoint => url.includes(endpoint));
 
     if (status !== 401 || !originalRequest || originalRequest._retry || isAuthRequest) {
+      if (originalRequest && !isAuthRequest && ['post', 'put', 'patch', 'delete'].includes(originalRequest.method) && !originalRequest.silentError) showError(error);
       return Promise.reject(error);
     }
 

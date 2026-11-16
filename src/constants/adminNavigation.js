@@ -5,4 +5,5 @@ export const adminGroups = [
   { label: 'TÀI CHÍNH & HỆ THỐNG', items: [['finance', 'Tài chính', 'account_balance_wallet', 'Quản lý giao dịch, hoa hồng, hoàn tiền và chi trả.'], ['audit', 'Nhật ký', 'history', 'Theo dõi lịch sử thao tác quản trị.']] },
 ];
 adminGroups[adminGroups.length - 1].items.push(['operations', 'Vận hành', 'settings', 'Theo dõi tác vụ, email, đơn quá hạn và thu hồi tiền.']);
+adminGroups[adminGroups.length - 1].items.unshift(['transactions', 'Giao dịch', 'payments', 'Tra cứu thanh toán, tiền thực nhận và sổ giao dịch.']);
 export const adminSections = adminGroups.flatMap(group => group.items);

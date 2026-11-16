@@ -1,3 +1,4 @@
+import { getApiErrorMessage } from '../utils/errorHandler';
 import { useEffect, useRef, useState } from 'react';
 import * as api from '../services/operationsService';
 import { Dialog, Facts } from './OperationsUI';
@@ -9,7 +10,7 @@ export default function AdminRefundCreate({ payment, context, onClose, onSaved }
   const [orderId, setOrderId] = useState(context?.orderId || ''); const [amount, setAmount] = useState('');
   const [reason, setReason] = useState(context ? `Hoàn theo kết quả khiếu nại đơn ${context.orderId}` : '');
   const [confirmed, setConfirmed] = useState(false); const attempt = useRef(null); const { busy, error, run } = useAction();
-  useEffect(() => { let live = true; api.get(`/admin/manual-refunds/payment/${idOf(payment)}/context`).then(value => { if (live) setData(value); }).catch(cause => { if (live) setLoadError(cause.response?.data?.message || 'Không tải được đơn hàng.'); }); return () => { live = false; }; }, [payment]);
+  useEffect(() => { let live = true; api.get(`/admin/manual-refunds/payment/${idOf(payment)}/context`).then(value => { if (live) setData(value); }).catch(cause => { if (live) setLoadError(getApiErrorMessage(cause) || 'Không tải được đơn hàng.'); }); return () => { live = false; }; }, [payment]);
   const order = data?.orders.find(item => idOf(item) === orderId);
   const remaining = Math.max(0, Math.min((order?.buyerTotal || 0) - (order?.refundedAmount || 0) - (order?.refundPendingAmount || 0), payment.amount - (payment.refundedAmount || 0) - (payment.refundReservedAmount || 0)));
   const dispute = data?.disputes.find(item => idOf(item.orderId) === orderId);

@@ -1,3 +1,4 @@
+import NotificationBadge from './NotificationBadge';
 import { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import Icon from './Icon';
@@ -51,7 +52,7 @@ export default function SellerWorkspace({ activeTab, onSelectTab, children }) {
     <div className="seller-workspace">
       <header className="seller-topbar">
         <div className="seller-breadcrumb"><span>Không gian làm việc</span><Icon name="chevron_right" /><strong>{currentTitle}</strong></div>
-        <div className="seller-topbar-actions"><span className="seller-role-label"><span /> Người bán</span><button className="seller-notification-button" aria-label="Mở thông báo" title="Thông báo" onClick={() => setCurrentView('notifications')}><Icon name="notifications_none" /></button><button className="account-button seller-topbar-account" aria-label="Mở tài khoản" onClick={() => setCurrentView('account')}><UserAvatar user={user} className="seller-topbar-avatar" /><span>{user.name}</span><Icon name="expand_more" /></button></div>
+        <div className="seller-topbar-actions"><span className="seller-role-label"><span /> Người bán</span><button className="seller-notification-button" aria-label="Mở thông báo" title="Thông báo" onClick={() => setCurrentView('notifications')}><Icon name="notifications_none" /><NotificationBadge /></button><button className="account-button seller-topbar-account" aria-label="Mở tài khoản" onClick={() => setCurrentView('account')}><UserAvatar user={user} className="seller-topbar-avatar" /><span>{user.name}</span><Icon name="expand_more" /></button></div>
       </header>
       <div className="seller-workspace-content">{children}</div>
     </div>
