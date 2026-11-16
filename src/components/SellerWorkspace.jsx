@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import Icon from './Icon';
-import logo from '../image/logo-favicon/sifit-mark.png';
+import logo from '../assets/sifit-mark-hGVLPtRq.png';
 import UserAvatar from './UserAvatar';
 
 const sellerSections = [

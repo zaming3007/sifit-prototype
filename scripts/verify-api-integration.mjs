@@ -13,6 +13,7 @@ const backend = process.env.SIFIT_BACKEND_DIR || 'C:/Sifit-backend';
 const requireBackend = createRequire(pathToFileURL(path.join(backend, 'package.json')));
 Object.assign(process.env, {
   NODE_ENV: 'test', PAYMENTS_ENABLED: 'true', PAYMENT_PROVIDER: 'simulator', SHIPPING_PROVIDER: 'simulator', PAYOUT_MODE: 'simulation', PAYOS_CLIENT_ID: '', PAYOS_API_KEY: '', PAYOS_CHECKSUM_KEY: '', FRONTEND_URL: 'http://localhost:5187', SOCKET_CORS_ORIGIN: 'http://localhost:5187',
+  TRYON_MODE: 'disabled', FASHN_API_KEY: '',
   SOCKET_IO_ENABLED: 'true', JWT_ACCESS_SECRET: 'integration-access-secret-32-characters',
   JWT_REFRESH_SECRET: 'integration-refresh-secret-32-characters', PAYMENT_WEBHOOK_SECRET: 'integration-payment-secret-32-characters',
   SHIPPING_WEBHOOK_SECRET: 'integration-shipping-secret-32-characters', COMMISSION_RATE: '10',
@@ -306,7 +307,7 @@ try {
   await buy.screenshot({ path: 'artifacts/integration/checkout-desktop.png', fullPage: true });
   await buy.setViewportSize({ width: 390, height: 844 });
   await expect(buy.locator('.checkout-summary')).toHaveCSS('position', 'static');
-  expect(await buy.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await expect.poll(() => buy.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await buy.screenshot({ path: 'artifacts/integration/checkout-mobile.png', fullPage: true });
   await buy.setViewportSize({ width: 1440, height: 1000 });
   resetRateBudget();
@@ -340,6 +341,7 @@ try {
   await expect(buy.getByText('Địa chỉ 2', { exact: true })).toBeVisible();
   await expect(buy.getByText('123 Test Street, Test Ward, Ho Chi Minh', { exact: true })).toBeVisible();
   await captureMember(buy, 'member-addresses');
+  await buyerAccount.click();
   await buy.getByRole('button', { name: 'Thông báo', exact: true }).click();
   await expect(buy.getByRole('heading', { name: 'Tùy chọn thông báo' })).toBeVisible();
   await captureMember(buy, 'member-notifications');
@@ -722,7 +724,10 @@ try {
     await expect(page).toHaveURL(new RegExp(`view=${role === 'seller' ? 'seller' : 'homepage'}`));
     await expect.poll(async () => (await User.findOne({ email: `new-${role}@integration.test` }))?.role).toBe(role.toUpperCase());
     if (role === 'seller') await expect(page.getByRole('heading', { name: 'Kênh người bán', exact: true })).toBeVisible();
-    else await expect(page.getByRole('navigation', { name: 'Tài khoản người mua', exact: true })).toBeVisible();
+    else {
+      await page.getByRole('button', { name: 'Tài khoản New buyer', exact: true }).click();
+      await expect(page.getByRole('navigation', { name: 'Tùy chọn tài khoản', exact: true })).toBeVisible();
+    }
     await context.close();
   }
   console.log('PASS buyer and seller registration persists selected roles and opens the correct interface');

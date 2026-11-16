@@ -20,6 +20,7 @@ import './shop-profile.css';
 import './seller-verification.css';
 import './modern.css';
 import './pin-fashion.css';
+import './production.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

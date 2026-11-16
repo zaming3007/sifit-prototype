@@ -38,6 +38,7 @@ export const AppContextProvider = ({ children }) => {
   const [infoPage, setInfoPage] = useState('about');
   const [guideSection, setGuideSection] = useState(window.location.hash.slice(1));
   const [products, setProducts] = useState([]);
+  const [tryOnProduct, setTryOnProduct] = useState(null);
   const [apiCategories, setApiCategories] = useState([]);
   const [publicLoading, setPublicLoading] = useState(true);
   const [dataError, setDataError] = useState('');
@@ -449,7 +450,7 @@ export const AppContextProvider = ({ children }) => {
   return <AppContext.Provider value={{
     user, syncUserProfile, authLoading, authError, loginUser, loginGoogleUser, registerUser, logoutUser,
     currentView, setCurrentView, resourceTarget, openResource, goBack, authMode, authRole, openAuth, browse, infoPage, setInfoPage,
-    guideSection, setGuideSection, openSellGuide, products, setProducts, apiCategories, fetchListings,
+    guideSection, setGuideSection, openSellGuide, products, setProducts, tryOnProduct, setTryOnProduct, apiCategories, fetchListings,
     publicLoading, dataError, setDataError, reloadPublicData, selectedProduct: productWithCategory, openProduct, selectedProductId,
     productLoading: productLoad.id !== selectedProductId || productLoad.busy, productError: productLoad.error,
     retryProduct: () => setProductRevision(value => value + 1),

@@ -5,7 +5,7 @@ import LanguageSwitch from './LanguageSwitch';
 import { resolveCategoryKey } from './CategoryIcon';
 import Icon from './Icon';
 import UserAvatar from './UserAvatar';
-import logo from '../image/logo-favicon/sifit-mark.png';
+import logo from '../assets/sifit-mark-hGVLPtRq.png';
 
 const MIN_SIDEBAR_WIDTH = 76;
 const MAX_SIDEBAR_WIDTH = 360;

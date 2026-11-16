@@ -86,7 +86,7 @@ export async function verifyAccountOperations({ browser, base, requireBackend, a
   await adminPage.getByRole('checkbox').check();
   await adminPage.getByRole('button', { name: 'Xác nhận biên nhận thu hồi', exact: true }).click();
   await expect.poll(async () => (await Recovery.findOne({ orderId: order._id }))?.status).toBe('FUNDED');
-  await expect(adminPage.getByRole('status')).toContainText('Đã thu đủ');
+  await expect(adminPage.getByRole('status').filter({ hasText: 'Đã thu đủ' })).toBeVisible();
   await adminPage.getByRole('button', { name: 'Xem chứng từ BROWSER-RECOVERY-001', exact: true }).click();
   await expect(adminPage.getByAltText('Chứng từ thu hồi riêng tư')).toBeVisible();
   await adminPage.setViewportSize({ width: 390, height: 844 });

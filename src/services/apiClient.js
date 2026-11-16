@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from '../constants/apiEndpoints';
 import { notifyFromApiMutation } from '../utils/actionNotifier';
+import { startActivity, finishActivity } from '../utils/apiActivity';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '/api/v1' : 'http://localhost:5000/api/v1');
 
@@ -48,6 +49,7 @@ export function refreshAccessToken() {
 }
 
 apiClient.interceptors.request.use(config => {
+  startActivity(config);
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -56,10 +58,12 @@ apiClient.interceptors.request.use(config => {
 
 apiClient.interceptors.response.use(
   response => {
+    finishActivity(response.config);
     notifyFromApiMutation(response.config, response);
     return response;
   },
   async error => {
+    finishActivity(error.config);
     const originalRequest = error.config;
     const status = error.response?.status;
     const url = originalRequest?.url || '';

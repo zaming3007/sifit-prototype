@@ -9,6 +9,7 @@
     "lint": "oxlint src scripts vite.config.js",
     "preview": "vite preview",
     "test:ui": "node scripts/verify-api-integration.mjs",
+    "test:stylist": "node scripts/verify-stylist-production.mjs",
     "test:selling": "node scripts/verify-selling.mjs",
     "test:refunds": "node scripts/verify-manual-refunds.mjs",
     "test:returns": "node scripts/verify-dispute-returns.mjs",

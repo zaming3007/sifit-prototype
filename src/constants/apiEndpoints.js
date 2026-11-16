@@ -111,10 +111,6 @@ export const API_ENDPOINTS = {
     list: '/shops',
     bySlug: slug => `/shops/${slug}`,
   },
-  aiStylist: {
-    prompts: '/ai-stylist/prompts',
-    recommend: '/ai-stylist/recommend',
-  },
   admin: {
     dashboardOverview: '/admin/dashboard/overview',
     dashboardRevenue: '/admin/dashboard/revenue',

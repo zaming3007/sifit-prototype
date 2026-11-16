@@ -1,0 +1,15 @@
+.api-progress-shell{position:fixed;top:0;left:0;right:0;z-index:10000;pointer-events:none}.api-progress-line{height:3px;overflow:hidden;background:#dce5d0}.api-progress-line span{display:block;width:35%;height:100%;background:#657d46;animation:api-progress 1.5s ease-in-out infinite}.api-progress-status{float:right;margin:10px 16px;padding:9px 14px;max-width:calc(100% - 32px);border:1px solid #dce2d2;border-radius:9px;background:#fffffff5;color:#4f6240;box-shadow:0 4px 18px #26331c0d;font-size:11px;line-height:1.5}
+@keyframes api-progress{from{transform:translateX(-100%)}to{transform:translateX(390%)}}
+@media(prefers-reduced-motion:reduce){.api-progress-line span{animation:none;width:100%}}
+.store-vnav-logo-mark{background:#fff!important;border:1px solid #dfe2d7;padding:2px}
+.footer-brand img{filter:invert(1)}
+.store-app-shell>main{min-width:0}
+.tryon-detail-button{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px 20px;border:1px solid #a1ad8e;border-radius:30px;background:#edf1e5;color:#465839;font-size:13px;font-weight:600}
+@media(max-width:760px){
+  .storefront-refresh .header-main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 12px;padding-block:12px}
+  .storefront-refresh .store-topbar-left{grid-column:1;grid-row:1;min-width:0}
+  .storefront-refresh .account-actions{grid-column:2;grid-row:1;gap:8px;min-width:0}
+  .storefront-refresh .header-search.header-search-stretched{grid-column:1/-1;grid-row:2;width:100%;min-width:0}
+  .storefront-refresh .store-topbar-brand .store-vnav-brand-text{display:none}
+  .storefront-refresh .logout-link{display:none}
+}

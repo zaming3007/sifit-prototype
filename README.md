@@ -43,7 +43,7 @@ Product reports are available from product details. Users select a reason, descr
 
 Buyers can follow/unfollow public shops and open **Shop đang theo dõi** from account navigation. The page contains a paginated shop list and a feed of available products from followed shops. New-product alerts are sent only after first admin approval, with per-shop and global opt-outs. Shop links survive reloads, and notifications open the related product. Run `node scripts/verify-shop-follows.mjs` for the isolated real API/browser flow, including mobile layouts. See `C:/Sifit-backend/SHOP_FOLLOWS.md`.
 
-The backend has no AI stylist or advertising-package API. AI clearly shows unavailable status, and fake package actions have been removed. Public guide copy does not assume a fixed commission rate. Newsletter interest and language preferences remain explicitly local browser preferences.
+AI Stylist now uses the original FASHN fitting-room engines with existing Sifit authentication, private MongoDB results, credit limits and progress recovery. See `../Sifit-backend/STYLIST_PRODUCTION.md` for Render configuration. The backend has no advertising-package API; fake package actions have been removed. Public guide copy does not assume a fixed commission rate. Newsletter interest and language preferences remain explicitly local browser preferences.
 
 Seller images require configured Cloudinary credentials during normal development. A failed upload retains the already-created draft so it can be retried without creating another product.
 

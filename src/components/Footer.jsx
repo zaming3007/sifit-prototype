@@ -2,7 +2,7 @@ import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import MobileQrCode from './MobileQrCode';
 import Icon from './Icon';
-import logo from '../image/logo-favicon/sifit-mark.png';
+import logo from '../assets/sifit-mark-hGVLPtRq.png';
 
 export default function Footer() {
   const { setCurrentView, setInfoPage, browse, apiCategories, user, openAuth } = useApp();

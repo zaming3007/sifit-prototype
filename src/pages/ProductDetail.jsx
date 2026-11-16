@@ -23,6 +23,7 @@ export default function ProductDetail() {
     openAuth,
     wishlist,
     toggleWishlist,
+    setTryOnProduct,
   } = useApp();
 
   const [offerOpen, setOfferOpen] = useState(false);
@@ -235,7 +236,7 @@ export default function ProductDetail() {
                 </div>
                 <div>
                   <span className="text-[10px] uppercase text-gray-400 tracking-wider font-bold block">Chất liệu</span>
-                  <span className="text-sm font-semibold text-gray-900">{selectedProduct.material || 'Cotton / Blend'}</span>
+                  <span className="text-sm font-semibold text-gray-900">{selectedProduct.material || 'Shop chưa cập nhật'}</span>
                 </div>
               </div>
             </div>
@@ -261,6 +262,7 @@ export default function ProductDetail() {
 
             {/* Action buttons */}
             <div className="space-y-3 mb-6">
+              {!isSold && (!user || user.role === 'buyer') && <button className="tryon-detail-button" onClick={() => { setTryOnProduct(selectedProduct); setCurrentView('ai-stylist'); }}><Icon name="auto_awesome" />Thử món đồ này với AI<Icon name="arrow_forward" /></button>}
               {isSold ? (
                 <div className="bg-gray-100 border border-gray-200 p-5 rounded-2xl text-center">
                   <p className="text-sm font-black text-gray-900 uppercase tracking-wider">Sản phẩm hiện không khả dụng</p>

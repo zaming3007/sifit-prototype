@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import LanguageSwitch from '../components/LanguageSwitch';
 import GoogleSignIn from '../components/GoogleSignIn';
 import Icon from '../components/Icon';
-import logo from '../image/logo-favicon/sifit-mark.png';
+import logo from '../assets/sifit-mark-hGVLPtRq.png';
 import hero from '../image/banner/banner-log.jpg';
 import { EmailRequest } from '../components/EmailAccountActions';
 

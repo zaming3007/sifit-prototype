@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { adminGroups, adminSections } from '../constants/adminNavigation';
 import Icon from './Icon';
-import logo from '../image/logo-favicon/sifit-mark.png';
+import logo from '../assets/sifit-mark-hGVLPtRq.png';
 import UserAvatar from './UserAvatar';
 import '../admin.css';
 

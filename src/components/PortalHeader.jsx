@@ -1,5 +1,5 @@
 import { useApp } from '../context/AppContext';
-import logo from '../image/logo-favicon/sifit-mark.png';
+import logo from '../assets/sifit-mark-hGVLPtRq.png';
 
 export default function PortalHeader() {
   const { user, currentView, setCurrentView, logoutUser, orders } = useApp();

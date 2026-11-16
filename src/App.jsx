@@ -1,6 +1,7 @@
 import { LanguageProvider } from './context/LanguageContext';
 import { AppContextProvider } from './context/AppContext';
 import MainLayout from './layouts/MainLayout';
+import ApiProgress from './components/ApiProgress';
 import { useLanguage } from './context/LanguageContext';
 
 function DemoNotice() {
@@ -13,7 +14,7 @@ function DemoNotice() {
 
 export default function App() {
   return (
-    <LanguageProvider><DemoNotice /><AppContextProvider>
+    <LanguageProvider><ApiProgress /><DemoNotice /><AppContextProvider>
       <MainLayout />
     </AppContextProvider></LanguageProvider>
   );
