@@ -101,7 +101,7 @@ input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color:
 .seller-navigation > button[aria-current='page']::before, .seller-active-dot { background: var(--heritage-olive); }
 .seller-stat-card, .seller-dashboard-panel { background: var(--heritage-surface); border-color: var(--heritage-line); }
 .seller-stat-card.seller-stat-featured { background: #383a2c; color: #fffaf0; }
-.seller-sidebar-shop, .seller-shop-avatar, .seller-topbar-avatar { background: #eae5d7; color: #646649; border-color: var(--heritage-line); }
+.workspace-account-avatar { background: #eae5d7; color: #646649; border-color: var(--heritage-line); }
 .admin-shell, .admin-workspace { background: var(--heritage-paper); color: var(--heritage-ink); }
 .admin-sidebar, .admin-topbar { background: var(--heritage-surface); border-color: var(--heritage-line); }
 .admin-nav-group > button[aria-current='page'] { background: #eae5d7; color: #54583b; }

@@ -377,7 +377,7 @@ export default function Homepage() {
         {[
           ['forum', text('Hỏi người bán trước khi mua', 'Ask before you buy'), text('Trò chuyện trực tiếp về món đồ bạn thích.', 'Chat directly about the piece you love.')],
           ['checkroom', text('Biết rõ món đồ bạn chọn', 'Know your next favourite'), text('Xem kích thước, tình trạng và mô tả chi tiết.', 'Check size, condition and all the details.')],
-          ['verified_user', text('Theo dõi từng hành trình', 'Follow its next chapter'), text('Quản lý đơn mua và gửi yêu cầu hỗ trợ.', 'Track your orders and request support.')],
+          ['verified_user', text('Theo dõi từng hành trình', 'Follow its next chapter'), text('Theo dõi đơn mua và xác nhận khi nhận hàng.', 'Track your orders and confirm delivery.')],
         ].map(([icon, title, description]) => (
           <div key={icon}>
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">

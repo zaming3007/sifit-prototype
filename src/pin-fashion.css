@@ -1585,7 +1585,6 @@ main:has(.catalog-store),
 .member-page .member-order-details,
 .member-page .member-order-total,
 .member-page .member-order-card form,
-.seller-order-finance,
 .seller-order-card .member-order-details,
 .seller-order-card form,
 .seller-empty-state,
@@ -1598,7 +1597,6 @@ main:has(.catalog-store),
 }
 
 .member-page .member-order-product img,
-.seller-order-card .member-order-product img,
 .seller-product-thumbnail,
 .offer-image {
   border-radius: 14px !important;
@@ -1617,9 +1615,8 @@ main:has(.catalog-store),
 }
 
 .seller-navigation > button,
-.seller-sidebar-shop,
 .seller-collapse-button,
-.seller-signout {
+.workspace-account-signout {
   border-radius: 14px !important;
 }
 

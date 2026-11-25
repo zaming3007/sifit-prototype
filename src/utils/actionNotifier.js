@@ -303,11 +303,11 @@ export function notifyFromApiMutation(config, response) {
     return;
   }
 
-  // Disputes & Refunds (/disputes, /refunds)
-  if (url.includes('/dispute') || url.includes('/refund')) {
+  // Refunds
+  if (url.includes('/refund')) {
     notifyAction({
       category: 'order',
-      title: 'Đã cập nhật khiếu nại / hoàn tiền',
+      title: 'Đã cập nhật khoản hoàn tiền',
       message: 'Yêu cầu bảo vệ đơn hàng của bạn đã được ghi nhận.',
       icon: 'shield',
     });

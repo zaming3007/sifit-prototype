@@ -1,5 +1,5 @@
 import { OverdueOrders, RecoveryPanel } from './AdminOperations';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import LocalizedContent from '../components/LocalizedContent';
 import AddressBook from '../components/AddressBook';
@@ -35,16 +35,16 @@ const sections = {
   profile: ['Hồ sơ shop', 'Giới thiệu cửa hàng của bạn và cập nhật thông tin liên hệ.'],
   addresses: ['Địa chỉ lấy hàng', 'Quản lý địa chỉ để việc giao hàng thuận tiện hơn.'],
   shipments: ['Vận chuyển', 'Theo dõi các vận đơn của cửa hàng.'],
-  disputes: ['Khiếu nại', 'Theo dõi tiến độ và kết quả xử lý khiếu nại.'],
   reviews: ['Đánh giá', 'Lắng nghe khách hàng và phản hồi đánh giá sản phẩm.'],
   payouts: ['Chi trả', 'Xem chi tiết các đợt chi trả cho cửa hàng.'],
 };
-const productStatuses = { active: 'Đang bán', pending: 'Chờ duyệt', draft: 'Bản nháp', rejected: 'Bị từ chối', reserved: 'Đang giữ chỗ', sold: 'Đã bán', archived: 'Đã lưu trữ' };
+const productStatuses = { active: 'Đang bán', pending: 'Chờ duyệt', draft: 'Bản nháp', rejected: 'Bị từ chối', reserved: 'Đang giữ chỗ', sold: 'Đã mua', archived: 'Đã lưu trữ' };
 const orderStatuses = { PENDING_PAYMENT: 'Chờ thanh toán', PAID: 'Đã thanh toán', PROCESSING: 'Đang chuẩn bị', SHIPPED: 'Đang giao', DELIVERED: 'Đã giao', COMPLETED: 'Hoàn thành', CANCELLED: 'Đã hủy', REFUNDED: 'Đã hoàn tiền', REFUND_PENDING: 'Chờ hoàn tiền' };
 import SellerBankAccount from '../components/SellerBankAccount';
 export default function SellerStudio({ tab = 'overview', setTab }) {
   const { apiCategories, fetchListings } = useApp();
   const [products, setProducts] = useState([]);
+  const productRequests = useRef({ issued: 0, applied: 0 });
   const [orders, setOrders] = useState([]);
   const [profile, setProfile] = useState(null);
   const [profileForm, setProfileForm] = useState({ shopName: '', description: '', contactPhone: '', avatar: '' });
@@ -90,7 +90,14 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
     setNotice('Đã lưu thứ tự ảnh. Ảnh đầu tiên là ảnh bìa.');
   });
 
-  const refreshProducts = useCallback(async () => setProducts((await collectPages(productService.listMyProducts)).items), []);
+  const refreshProducts = useCallback(async () => {
+    const requestId = ++productRequests.current.issued;
+    const { items } = await collectPages(productService.listMyProducts);
+    if (requestId > productRequests.current.applied) {
+      productRequests.current.applied = requestId;
+      setProducts(items);
+    }
+  }, []);
   const refreshOrders = useCallback(async () => setOrders((await collectPages(sellerService.listSellerOrders)).items), []);
   const loadProfile = useCallback(async () => {
     try {
@@ -106,6 +113,30 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
     if (failed) throw failed.reason;
   }, [loadProfile, refreshProducts, refreshOrders]);
   useEffect(() => { run(reload); }, [run, reload]);
+  useEffect(() => {
+    if (!['listings', 'overview', 'orders'].includes(tab)) return;
+    let pending;
+    const refresh = () => {
+      clearTimeout(pending);
+      pending = setTimeout(() => {
+        if (document.visibilityState !== 'visible') return;
+        if (tab !== 'orders') refreshProducts().catch(() => {});
+        if (tab !== 'listings') refreshOrders().catch(() => {});
+      }, 150);
+    };
+    if (tab !== 'overview') refresh();
+    const interval = setInterval(refresh, 30000);
+    window.addEventListener('sifit:notifications', refresh);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      clearTimeout(pending);
+      clearInterval(interval);
+      window.removeEventListener('sifit:notifications', refresh);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [refreshOrders, refreshProducts, tab]);
   const newDraft = () => {
     setEditing(null); setForm(empty); setFiles([]); setSavedProduct(null); setNotice(''); setTab('add');
   };
@@ -140,9 +171,9 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
   return <LocalizedContent><div className="seller-studio" data-section={tab}>
     <div className="seller-page-heading"><div><p className="seller-eyebrow">SIFIT / SELLER STUDIO</p><h1>{sections[tab][0]}</h1><p>{sections[tab][1]}</p></div><div className="seller-page-heading-actions">{tab === 'overview' && <><button className="seller-secondary-button" disabled={busy} onClick={() => run(reload)}><Icon name="refresh" />Làm mới</button><button className="seller-primary-button" disabled={busy} onClick={newDraft}><Icon name="add_box" />Tạo sản phẩm mới</button></>}</div></div>
     <Feedback busy={busy} error={error} />{notice && <p role="status" className="p-3 bg-green-50 rounded-xl">{notice}</p>}
-    {tab === 'payouts' && <><SellerBankAccount /><RecoveryPanel /></>}
+    {tab === 'payouts' && <>{profile ? <SellerVerificationPanel onChange={loadProfile} /> : <SellerBankAccount />}<RecoveryPanel /></>}
     {tab === 'offers' && <OffersPage embedded />}
-    {['shipments', 'disputes', 'reviews', 'payouts'].includes(tab) && <SellerOperations key={tab} section={tab} />}
+    {['shipments', 'reviews', 'payouts'].includes(tab) && <SellerOperations key={tab} section={tab} />}
     {tab === 'overview' && <>
       <div className="seller-section-caption"><h2>Hiệu quả kinh doanh</h2><span>Toàn bộ thời gian</span></div>
       <div className="seller-stat-grid">{[
@@ -152,7 +183,7 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
         ['Đã chi trả', 'paidProceeds', 'account_balance_wallet', 'Số tiền đã chi trả cho cửa hàng'],
       ].map(([label, key, icon, hint], index) => <section className={`seller-stat-card ${index === 0 ? 'seller-stat-featured' : ''}`} key={key}><div><span>{label}</span><span className="seller-stat-icon"><Icon name={icon} /></span></div><strong>{earnings ? money(earnings[key]) : '—'}</strong><p>{hint}</p></section>)}</div>
       <div className="seller-dashboard-columns"><section className="seller-dashboard-panel"><div className="seller-panel-heading"><div><h2>Tủ đồ của shop</h2><p>Tình trạng sản phẩm hiện tại</p></div><span className="seller-count-badge">{products.length} sản phẩm</span></div><div className="seller-inventory-status">{['active', 'pending', 'draft', 'sold'].map(status => { const count = products.filter(product => product.status === status).length; return <div key={status}><div><span><i className={`seller-status-dot status-${status}`} />{productStatuses[status]}</span><strong>{count}</strong></div><progress value={count} max={Math.max(products.length, 1)} aria-label={productStatuses[status]} /></div>; })}</div><button className="seller-panel-link" onClick={() => setTab('listings')}>Quản lý tủ đồ<Icon name="arrow_forward" /></button></section>
-        <section className="seller-dashboard-panel"><div className="seller-panel-heading"><div><h2>Đối soát & chi trả</h2><p>Minh bạch từng khoản thu</p></div><span className="seller-panel-icon"><Icon name="account_balance_wallet" /></span></div><dl className="seller-finance-summary"><div><dt>Hoa hồng</dt><dd>{earnings ? money(earnings.totalCommissions) : '—'}</dd></div><div><dt>Hoa hồng hoàn/đảo</dt><dd>{earnings ? money(earnings.refundedOrReversedAmounts) : '—'}</dd></div><div><dt>Đợt chi trả</dt><dd>{payouts.length}</dd></div></dl><p className="seller-finance-note"><Icon name="verified_user" />Chi trả phụ thuộc xác minh shop, thời hạn bảo vệ người mua và thời gian giữ tiền.</p><button className="seller-panel-link" onClick={() => setTab('profile')}>Kiểm tra hồ sơ shop<Icon name="arrow_forward" /></button></section></div>
+        <section className="seller-dashboard-panel"><div className="seller-panel-heading"><div><h2>Đối soát & chi trả</h2><p>Minh bạch từng khoản thu</p></div><span className="seller-panel-icon"><Icon name="account_balance_wallet" /></span></div><dl className="seller-finance-summary"><div><dt>Hoa hồng</dt><dd>{earnings ? money(earnings.totalCommissions) : '—'}</dd></div><div><dt>Hoa hồng hoàn/đảo</dt><dd>{earnings ? money(earnings.refundedOrReversedAmounts) : '—'}</dd></div><div><dt>Đợt chi trả</dt><dd>{payouts.length}</dd></div></dl><p className="seller-finance-note"><Icon name="verified_user" />Chi trả phụ thuộc xác minh shop, thời hạn bảo vệ người mua và thời gian giữ tiền.</p><button className="seller-panel-link" onClick={() => setTab('payouts')}>Kiểm tra điều kiện chi trả<Icon name="arrow_forward" /></button></section></div>
       <section className="seller-dashboard-panel seller-recent-orders"><div className="seller-panel-heading"><div><h2>Đơn bán gần đây</h2><p>Cập nhật từ hoạt động thực tế của cửa hàng</p></div><button className="seller-panel-link" onClick={() => setTab('orders')}>Xem đơn bán<Icon name="arrow_forward" /></button></div>{!orders.length ? <div className="seller-empty-state"><span><Icon name="receipt_long" /></span><h3>Chưa có đơn bán</h3><p>Đơn hàng mới sẽ xuất hiện tại đây khi có người đặt mua.</p></div> : <div className="seller-table-wrap"><table><thead><tr><th>Đơn hàng</th><th>Người mua</th><th>Ngày đặt</th><th>Thanh toán</th><th>Trạng thái</th></tr></thead><tbody>{orders.slice(0, 5).map(order => <tr key={order._id}><td>#{order._id.slice(-8)}</td><td>{order.buyer?.name || 'Người mua'}</td><td>{new Date(order.createdAt).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</td><td>{money(order.totalAmount)}</td><td><span className="seller-status-badge">{orderStatuses[order.orderStatus] || order.orderStatus}</span></td></tr>)}</tbody></table></div>}</section>
       <section className="seller-dashboard-panel"><div className="seller-panel-heading"><div><h2>Lịch sử chi trả</h2><p>Theo dõi các khoản chi trả cho shop</p></div></div>{!payouts.length && <p className="seller-muted-copy">Chưa có đợt chi trả. Các khoản chi trả sẽ được hiển thị tại đây.</p>}{payouts.map(item => <div className="seller-payout-row" key={idOf(item)}><strong>{money(item.amount)}</strong><span className="seller-status-badge">{item.status}</span><span>{item.provider}</span></div>)}</section>
     </>}
@@ -251,14 +282,14 @@ export default function SellerStudio({ tab = 'overview', setTab }) {
       )}
     </Panel>}
     {tab === 'orders' && <OverdueOrders />}
-    {tab === 'orders' && <div className="seller-orders-list space-y-4"><div className="seller-orders-toolbar"><span><strong>{orders.length}</strong> đơn bán</span><button className="seller-secondary-button" disabled={busy} onClick={() => run(refreshOrders)}><Icon name="refresh" />Làm mới đơn bán</button></div>{!orders.length && <div className="seller-empty-state"><span><Icon name="receipt_long" /></span><h3>Chưa có đơn bán.</h3><p>Đơn hàng của khách sẽ xuất hiện tại đây.</p></div>}{orders.map(order => <OrderCard key={order._id} order={order} seller addresses={addresses} onChange={refreshOrders} />)}</div>}
+    {tab === 'orders' && <div className="seller-orders-list"><div className="seller-orders-toolbar"><span><strong>{orders.length}</strong> đơn bán</span><button className="seller-secondary-button" disabled={busy} onClick={() => run(refreshOrders)}><Icon name="refresh" />Làm mới đơn bán</button></div>{!orders.length && <div className="seller-empty-state"><span><Icon name="receipt_long" /></span><h3>Chưa có đơn bán.</h3><p>Đơn hàng của khách sẽ xuất hiện tại đây.</p></div>}{orders.map(order => <OrderCard key={order._id} order={order} seller addresses={addresses} onChange={refreshOrders} />)}</div>}
     {tab === 'addresses' && <AddressBook onChange={setAddresses} />}
     {tab === 'profile' && <Panel title="Hồ sơ shop"><p>Trạng thái xác minh: {verificationLabels[profile?.verificationStatus] || 'Chưa tạo shop'}</p><form className="space-y-3 max-w-xl" onSubmit={event => { event.preventDefault(); run(async () => {
       const payload = { shopName: profileForm.shopName, description: profileForm.description, ...(profileForm.contactPhone ? { contactPhone: profileForm.contactPhone } : {}), ...(profileForm.avatar ? { avatar: profileForm.avatar } : {}) };
       if (profile) await sellerService.updateSellerProfile(payload); else await sellerService.createSellerProfile(payload);
       await loadProfile(); setNotice('Đã lưu hồ sơ shop.');
     }); }}>{[['Tên shop', 'shopName'], ['Mô tả', 'description'], ['Điện thoại liên hệ', 'contactPhone'], ['URL ảnh đại diện', 'avatar']].map(([label, key]) => <Field key={key} label={label}><input className="input-field" required={key === 'shopName'} minLength={key === 'shopName' ? 3 : undefined} type={key === 'avatar' ? 'url' : 'text'} value={profileForm[key]} onChange={event => setProfileForm({ ...profileForm, [key]: event.target.value })} /></Field>)}<button disabled={busy} className="btn-primary">Lưu hồ sơ shop</button></form>
-      {profile && <SellerVerificationPanel onChange={loadProfile} />}
+      {profile && <SellerBankAccount onSaved={loadProfile} />}
     </Panel>}
   </div></LocalizedContent>;
 }

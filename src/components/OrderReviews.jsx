@@ -80,12 +80,12 @@ export default function OrderReviews({ order, onOrderChange }) {
   const [form, setForm] = useState({ rating: 5, comment: '' });
   useEffect(() => { setReviews(order.productReviews || []); }, [order.productReviews]);
   const onSaved = review => setReviews(prev => [...prev.filter(item => item._id !== review._id), review]);
-  const canCreate = order.paymentStatus === 'PAID' && !!order.deliveredAt && !order.activeDispute;
+  const canCreate = order.paymentStatus === 'PAID' && !!order.deliveredAt && !order.reviewsBlocked;
   const sellerRating = rating || order.sellerRating;
   return <div className="space-y-4" aria-label="Đánh giá đơn hàng">
     <Feedback busy={busy} error={error} />
     {error && <button disabled={busy} onClick={() => run(onOrderChange)}>Tải lại đánh giá</button>}
-    {!canCreate && <p>Chỉ đánh giá khi đơn đã giao, hoàn thành, thanh toán hợp lệ và không có khiếu nại đang mở.</p>}
+    {!canCreate && <p>Chỉ đánh giá khi đơn đã giao, hoàn thành, thanh toán hợp lệ.</p>}
     {order.items.map(item => <ProductReviewEditor key={idOf(item.productId)} order={order} item={item}
       review={reviews.find(review => idOf(review.productId) === idOf(item.productId))} onSaved={onSaved} canCreate={canCreate} />)}
     <section className="border rounded-xl p-4 space-y-3" aria-label="Đánh giá shop">

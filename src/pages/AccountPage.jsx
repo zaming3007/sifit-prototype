@@ -100,7 +100,7 @@ export default function AccountPage({ section = 'all' }) {
   return (
     <div className="member-page member-account max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 animate-fade-in space-y-6">
       <BuyerHeading
-        title={section === 'profile' ? text('Thông tin cá nhân', 'Personal information') : section === 'password' ? text('Đổi mật khẩu', 'Change password') : text('Thông tin tài khoản', 'Your account')}
+        title={section === 'profile' || (section === 'all' && user.role !== 'buyer') ? text('Thông tin cá nhân', 'Personal information') : section === 'password' ? text('Đổi mật khẩu', 'Change password') : text('Thông tin tài khoản', 'Your account')}
         description={section === 'password' ? text('Cập nhật mật khẩu để bảo vệ tài khoản của bạn.', 'Update your password to protect your account.') : text('Cập nhật thông tin và ảnh đại diện của bạn tại Sifit.', 'Make your Sifit profile your own.')}
       />
 

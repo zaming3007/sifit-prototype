@@ -63,14 +63,6 @@ export const API_ENDPOINTS = {
     adminShipments: '/admin/shipments',
     reviewDelivery: id => `/admin/shipments/${id}/review-delivery`,
   },
-  disputes: {
-    create: orderId => `/orders/${orderId}/disputes`,
-    mine: '/disputes/my',
-    byId: id => `/disputes/${id}`,
-    admin: '/admin/disputes',
-    review: id => `/admin/disputes/${id}/review`,
-    resolve: id => `/admin/disputes/${id}/resolve`,
-  },
   reviews: {
     products: '/reviews/products',
     productList: productId => `/products/${productId}/reviews`,

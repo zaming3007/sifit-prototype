@@ -170,23 +170,9 @@
 .profile-edit-form .input-field { min-width: 0; }
 .account-button > span:not(.user-avatar):not(.sifit-icon) { max-width: 145px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 760px) {
-  .seller-shell:has(.member-account) { --seller-sidebar-width: 64px; }
-  .seller-shell:has(.member-account) .seller-brand { margin-inline: 7px; align-items: center; min-height: 78px; }
-  .seller-shell:has(.member-account) .seller-brand img { width: 46px; height: auto; }
-  .seller-shell:has(.member-account) .seller-brand > span,
-  .seller-shell:has(.member-account) .seller-nav-caption,
-  .seller-shell:has(.member-account) .seller-navigation > button > span:not(.sifit-icon),
-  .seller-shell:has(.member-account) .seller-sidebar-shop > div,
-  .seller-shell:has(.member-account) .seller-signout > span:not(.sifit-icon),
-  .seller-shell:has(.member-account) .seller-collapse-button { display: none; }
-  .seller-shell:has(.member-account) .seller-sidebar-scroll { padding-inline: 6px; }
-  .seller-shell:has(.member-account) .seller-navigation > button { justify-content: center; padding-inline: 8px; }
-  .seller-shell:has(.member-account) .seller-sidebar-shop { justify-content: center; padding-inline: 0; }
-  .seller-shell:has(.member-account) .seller-signout { justify-content: center; padding-inline: 8px; }
   .seller-shell:has(.member-account) .seller-topbar { padding-inline: 12px; gap: 8px; }
   .seller-shell:has(.member-account) .seller-breadcrumb { display: none; }
   .seller-shell:has(.member-account) .seller-topbar-actions { margin-left: auto; gap: 8px; }
-  .seller-shell:has(.member-account) .seller-topbar-account > span:not(.user-avatar):not(.sifit-icon) { max-width: 80px; }
   .seller-shell:has(.member-account) .seller-workspace-content { padding: 18px 10px; }
   .seller-shell .member-account, .admin-shell .member-account { width: 100%; padding: 10px 0 30px; }
 }

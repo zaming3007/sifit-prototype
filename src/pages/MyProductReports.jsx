@@ -41,7 +41,7 @@ export default function MyProductReports() {
   return (
     <div className="member-page member-report-history max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 space-y-6">
       <BuyerHeading
-        title="Báo cáo & Khiếu nại sản phẩm của tôi"
+        title="Báo cáo sản phẩm của tôi"
         description="Theo dõi kết quả kiểm tra và gửi báo cáo mới khi phát hiện sản phẩm vi phạm."
       >
         <button
@@ -67,7 +67,7 @@ export default function MyProductReports() {
             }}
           >
             <Icon name={createOpen ? 'close' : 'add'} className="text-sm" />
-            {createOpen ? 'Đóng biểu mẫu' : 'Tạo khiếu nại / báo cáo'}
+            {createOpen ? 'Đóng biểu mẫu' : 'Tạo báo cáo'}
           </button>
         )}
       </BuyerHeading>
@@ -81,11 +81,11 @@ export default function MyProductReports() {
         >
           <h2 className="font-heading font-bold text-sm text-gray-900 flex items-center gap-2">
             <Icon name="flag" className="text-primary text-base" />
-            Tạo báo cáo / khiếu nại sản phẩm mới
+            Tạo báo cáo sản phẩm mới
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Chọn sản phẩm cần khiếu nại" icon="shopping_bag">
+            <Field label="Chọn sản phẩm cần báo cáo" icon="shopping_bag">
               <select
                 required
                 className="input-field"
@@ -101,7 +101,7 @@ export default function MyProductReports() {
               </select>
             </Field>
 
-            <Field label="Lý do khiếu nại / báo cáo" icon="flag">
+            <Field label="Lý do báo cáo" icon="flag">
               <select
                 required
                 aria-label="Lý do báo cáo"

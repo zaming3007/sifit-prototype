@@ -29,9 +29,19 @@ try {
   };
   const sell = await login(seller), staff = await login(admin); resetBudget();
   await sell.getByRole('button', { name: 'Hồ sơ shop', exact: true }).click();
-  await sell.getByLabel('Tên ngân hàng', { exact: true }).fill('BIDV'); await sell.getByLabel('Mã BIN ngân hàng (6 số)', { exact: true }).fill('970418');
+  await expect(sell.getByRole('heading', { name: 'Lập hồ sơ xác minh', exact: true })).toHaveCount(0);
+  await expect(sell.getByLabel('Mã BIN ngân hàng (6 số)', { exact: true })).toHaveCount(0);
+  await sell.getByLabel('Tên ngân hàng', { exact: true }).selectOption('970418');
   await sell.getByLabel('Số tài khoản nhận tiền', { exact: true }).fill('123456789'); await sell.getByLabel('Tên chủ tài khoản', { exact: true }).fill('NGUYEN DUC HOA');
   await sell.getByRole('button', { name: 'Lưu tài khoản nhận tiền', exact: true }).click(); await expect(sell.getByText('Đã lưu tài khoản nhận tiền.', { exact: true })).toBeVisible();
+  const bank = await requireBackend('./src/models/sellerBankAccount.model').findOne({ sellerId: seller._id });
+  expect(bank).toMatchObject({ bankName: 'BIDV', bankBin: '970418' });
+  const openVerification = async () => {
+    await sell.getByRole('button', { name: 'Chi trả', exact: true }).click();
+    await expect(sell.getByRole('heading', { name: 'Lập hồ sơ xác minh', exact: true })).toHaveCount(0);
+    await sell.getByText('Xác minh tài khoản nhận tiền', { exact: true }).click();
+  };
+  await openVerification();
   const fillDraft = async () => {
     await sell.getByLabel('Họ tên chủ shop', { exact: true }).fill('Nguyễn Đức Hòa'); await sell.getByLabel('Số điện thoại xác minh', { exact: true }).fill('0901234567');
     await sell.getByLabel('Địa chỉ liên hệ xác minh', { exact: true }).fill('123 Fixture Street, Ho Chi Minh City');
@@ -41,8 +51,17 @@ try {
   const filesAndSubmit = async () => {
     for (const label of ['Ảnh xác minh chủ shop', 'Ảnh sở hữu tài khoản ngân hàng']) {
       await sell.getByLabel(label, { exact: true }).setInputFiles({ name: 'private.png', mimeType: 'image/png', buffer: png });
+      const preview = sell.getByRole('button', { name: `Xem lớn ${label.toLowerCase()}`, exact: true });
+      await expect(preview.getByRole('img', { name: label, exact: true })).toBeVisible();
+      await expect.poll(() => preview.locator('img').evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
+      await preview.click();
+      const viewer = sell.getByRole('dialog', { name: label, exact: true });
+      await expect(viewer.getByRole('img', { name: label, exact: true })).toBeVisible();
+      await sell.keyboard.press('Escape');
+      await expect(viewer).toBeHidden();
       await sell.getByRole('button', { name: `Lưu ${label.toLowerCase()}`, exact: true }).click();
       await expect(sell.getByText(`Đã lưu ${label.toLowerCase()}.`, { exact: true })).toBeVisible();
+      await expect(preview).toBeVisible();
     }
     await sell.getByRole('checkbox', { name: 'Tôi là chủ tài khoản ngân hàng', exact: false }).check();
     await sell.getByRole('checkbox', { name: 'Tôi đồng ý để Sifit', exact: false }).check();
@@ -51,7 +70,7 @@ try {
   };
   await fillDraft(); await filesAndSubmit();
   expect((await Profile.findById(profile._id)).verificationStatus).toBe('PENDING');
-  await sell.reload(); await sell.getByRole('button', { name: 'Hồ sơ shop', exact: true }).click();
+  await sell.reload(); await openVerification();
   await expect(sell.getByRole('button', { name: 'Gửi hồ sơ xác minh shop', exact: true })).toHaveCount(0);
   console.log('PASS seller bank, draft, private uploads, explicit consent, submission and persisted pending dossier');
   await requireBackend('./src/services/notificationEvent.service').processBatch({ limit: 50 });

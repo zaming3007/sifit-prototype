@@ -1,27 +1,24 @@
 .admin-shell { --admin-sidebar-width: 254px; --admin-green: #185c43; --admin-border: #e1e8de; min-height: 100vh; background: #f5f7f5; color: #2b4033; font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 13px; line-height: 1.65; }
 .admin-shell.admin-collapsed { --admin-sidebar-width: 78px; }
 .admin-sidebar { position: fixed; inset: 0 auto 0 0; width: var(--admin-sidebar-width); display: flex; flex-direction: column; border-right: 1px solid var(--admin-border); background: #fff; z-index: 50; transition: width .2s; }
-.admin-brand { display: flex; flex-direction: column; align-items: start; justify-content: center; gap: 6px; padding: 20px 26px; min-height: 104px; border-bottom: 1px solid #edf1e9; text-align: left; }
-.admin-brand img { width: 118px; height: 42px; object-fit: contain; }
-.admin-brand > span { font-size: 8px; letter-spacing: .2em; color: #8b9a80; }
+.admin-sidebar-header { position: relative; flex-shrink: 0; margin-inline: 23px; border-bottom: 1px solid #edf0ed; }
+.admin-brand { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 5px; min-height: 99px; text-align: left; }
+.admin-brand img { width: 118px; height: 43px; object-fit: contain; }
+.admin-brand-label { color: #829489; font-size: 8px; font-weight: 600; letter-spacing: .21em; padding-left: 3px; }
+.admin-brand-mark { display: none; place-items: center; width: 42px; height: 42px; border-radius: 11px; background: #eaf4ed; color: #12664c; font-size: 23px; }
+.admin-collapse, .admin-drawer-close { position: absolute; top: 12px; right: 0; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; color: #587064; font-size: 20px; }
+.admin-collapse:hover, .admin-drawer-close:hover { color: #12664c; background: #f3f7f3; }
+.admin-drawer-close { display: none; }
 .admin-sidebar-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 22px 14px; scrollbar-width: thin; scrollbar-color: #dbe4d3 transparent; }
 .admin-nav-group + .admin-nav-group { margin-top: 24px; }
 .admin-nav-group > p { margin: 0 12px 11px; color: #91a086; font-size: 8px; font-weight: 600; letter-spacing: .13em; white-space: nowrap; }
-.admin-nav-group > button { display: flex; align-items: center; gap: 10px; min-height: 39px; width: 100%; padding: 10px 12px; margin-top: 4px; border-radius: 7px; color: #708267; font-size: 11px; font-weight: 500; text-align: left; white-space: nowrap; }
+.admin-nav-group > button { position: relative; display: flex; align-items: center; gap: 10px; min-height: 39px; width: 100%; padding: 10px 12px; margin-top: 4px; border-radius: 7px; color: #708267; font-size: 11px; font-weight: 500; text-align: left; white-space: nowrap; }
 .admin-nav-group > button > .sifit-icon { font-size: 18px; color: #809875; }
 .admin-nav-group > button > i { width: 5px; height: 5px; border-radius: 50%; margin-left: auto; background: #29855b; }
 .admin-nav-group > button:hover:not(:disabled) { background: #f2f7ed; color: #2f6843; }
 .admin-nav-group > button[aria-current='page'] { background: #eaf4e8; color: #206343; font-weight: 600; }
+.admin-nav-group > button[aria-current='page']::before { content: ''; position: absolute; left: -14px; width: 3px; height: 19px; background: var(--admin-green); border-radius: 0 3px 3px 0; }
 .admin-nav-group > button[aria-current='page'] .sifit-icon { color: #2f7850; }
-.admin-sidebar-footer { padding: 14px; border-top: 1px solid #e8eee2; background: #fff; }
-.admin-user { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px; background: #f5f8f1; border: 1px solid #e9efdf; border-radius: 8px; margin-bottom: 9px; }
-.admin-avatar { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: #e4eddb; color: #5c7950; font-size: 13px; font-weight: 600; flex-shrink: 0; }
-.admin-user > div { min-width: 0; }
-.admin-user strong { display: block; font-size: 10px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.admin-user small { display: block; font-size: 9px; color: #94a287; margin-top: 3px; }
-.admin-collapse, .admin-logout { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; font-size: 10px; color: #8a9a7e; text-align: left; border-radius: 6px; }
-.admin-collapse .sifit-icon, .admin-logout .sifit-icon { font-size: 17px; }
-.admin-logout:hover { background: #fcf0eb; color: #a36d57; }
 .admin-workspace { margin-left: var(--admin-sidebar-width); min-width: 0; }
 .admin-topbar { position: sticky; top: 0; z-index: 35; min-height: 74px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 15px 30px; background: #ffffffed; backdrop-filter: blur(12px); border-bottom: 1px solid var(--admin-border); }
 .admin-breadcrumb { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 11px; }
@@ -32,8 +29,6 @@
 .admin-role { display: flex; align-items: center; gap: 7px; padding-right: 18px; border-right: 1px solid #e4eade; color: #849b77; font-size: 10px; }
 .admin-role i { width: 5px; height: 5px; background: #6f9c5f; border-radius: 50%; }
 .admin-notification { width: 32px; height: 32px; display: grid; place-items: center; color: #839b76; }
-.admin-account { display: flex; align-items: center; gap: 10px; font-size: 11px; color: #5a7250; }
-.admin-account > .sifit-icon { font-size: 14px; color: #95a98a; }
 .admin-workspace-body { padding: 30px; max-width: 1800px; margin: 0 auto; }
 .admin-workspace-body main { min-width: 0; }
 .admin-content { display: grid; gap: 20px; min-width: 0; }
@@ -105,12 +100,13 @@
 .admin-shell .ops-page > nav[aria-label='Chức năng'] { padding-bottom: 15px; border-bottom: 1px solid #e3ebd9; }
 .admin-shell .member-page { width: 100%; padding: 0; }
 .admin-shell .admin-workspace-body main > .max-w-3xl { max-width: none; padding: 0; }
-.admin-collapsed .admin-brand { padding-inline: 10px; align-items: center; }
-.admin-collapsed .admin-brand img { width: 52px; height: auto; }
-.admin-collapsed .admin-brand > span, .admin-collapsed .admin-nav-group > p, .admin-collapsed .admin-nav-group > button > span:not(.sifit-icon), .admin-collapsed .admin-nav-group > button > i, .admin-collapsed .admin-user > div, .admin-collapsed .admin-collapse > span:not(.sifit-icon), .admin-collapsed .admin-logout > span:not(.sifit-icon) { display: none; }
-.admin-collapsed .admin-sidebar-scroll, .admin-collapsed .admin-sidebar-footer { padding-inline: 12px; }
-.admin-collapsed .admin-nav-group > button, .admin-collapsed .admin-collapse, .admin-collapsed .admin-logout { justify-content: center; padding-inline: 8px; }
-.admin-collapsed .admin-user { padding-inline: 0; justify-content: center; }
+.admin-collapsed .admin-sidebar-header { margin-inline: 10px; }
+.admin-collapsed .admin-collapse { position: static; margin: 8px auto 0; }
+.admin-collapsed .admin-brand { min-height: 56px; margin-inline: auto; align-items: center; }
+.admin-collapsed .admin-brand img, .admin-collapsed .admin-brand-label, .admin-collapsed .admin-nav-group > p, .admin-collapsed .admin-nav-group > button > span:not(.sifit-icon), .admin-collapsed .admin-nav-group > button > i { display: none; }
+.admin-collapsed .admin-brand-mark { display: grid; }
+.admin-collapsed .admin-sidebar-scroll { padding-inline: 13px; }
+.admin-collapsed .admin-nav-group > button { justify-content: center; padding-inline: 8px; }
 .admin-menu-trigger, .admin-backdrop { display: none; }
 @media (max-width: 1250px) {
   .admin-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -118,7 +114,6 @@
   .admin-role { display: none; }
 }
 @media (max-width: 1020px) {
-  .admin-account > span:not(.admin-avatar) { display: none; }
   .admin-workspace-body { padding: 24px; }
   .admin-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 }
@@ -130,14 +125,15 @@
   .admin-mobile-open .admin-backdrop { display: block; position: fixed; inset: 0; background: #17372666; z-index: 45; }
   .admin-menu-trigger { display: grid; place-items: center; width: 32px; height: 32px; color: #668751; flex-shrink: 0; }
   .admin-collapse { display: none; }
+  .admin-drawer-close { display: grid; }
   .admin-topbar { padding-inline: 16px; gap: 12px; }
   .admin-breadcrumb > span, .admin-breadcrumb > .sifit-icon { display: none; }
-  .admin-collapsed .admin-brand { padding: 20px 26px; align-items: start; }
-  .admin-collapsed .admin-brand img { width: 118px; height: 42px; }
-  .admin-collapsed .admin-brand > span, .admin-collapsed .admin-nav-group > p, .admin-collapsed .admin-user > div, .admin-collapsed .admin-logout > span:not(.sifit-icon) { display: block; }
+  .admin-collapsed .admin-sidebar-header { margin-inline: 23px; }
+  .admin-collapsed .admin-brand { margin-inline: 0; min-height: 99px; align-items: flex-start; }
+  .admin-collapsed .admin-brand img, .admin-collapsed .admin-brand-label, .admin-collapsed .admin-nav-group > p { display: block; }
+  .admin-collapsed .admin-brand-mark { display: none; }
   .admin-collapsed .admin-nav-group > button > span:not(.sifit-icon) { display: inline; }
-  .admin-collapsed .admin-nav-group > button, .admin-collapsed .admin-logout { justify-content: flex-start; }
-  .admin-collapsed .admin-user { justify-content: flex-start; padding-inline: 10px; }
+  .admin-collapsed .admin-nav-group > button { justify-content: flex-start; padding-inline: 12px; }
   .admin-workspace-body { padding: 24px 16px; }
   .admin-page-heading { align-items: flex-start; flex-wrap: wrap; gap: 14px; }
   .admin-page-heading h1 { font-size: 24px; }

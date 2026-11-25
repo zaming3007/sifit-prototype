@@ -8,6 +8,7 @@ import ProductCard from '../components/ProductCard';
 import { Panel, Feedback } from '../components/MarketplaceUI';
 import { useAction } from '../hooks/useAction';
 import { idOf } from '../utils/marketplace';
+import { canOpenNotification, getNotificationIcon, openNotification } from '../utils/notifications';
 import { ACTION_CATEGORIES, clearActionHistory, getActionHistory } from '../utils/actionNotifier';
 import BuyerHeading from '../components/BuyerHeading';
 import Icon from '../components/Icon';
@@ -125,16 +126,6 @@ export default function NotificationsPage() {
     selectedActionCategory === 'all'
       ? actionLogs
       : actionLogs.filter(entry => entry.category === selectedActionCategory);
-
-  const getNotificationIcon = (type, resourceType) => {
-    if (resourceType === 'CONVERSATION') return 'forum';
-    if (type?.includes('ORDER') || resourceType === 'ORDER') return 'receipt_long';
-    if (type?.includes('SHIPMENT') || resourceType === 'SHIPMENT') return 'local_shipping';
-    if (type?.includes('PAYOUT') || resourceType === 'PAYOUT') return 'account_balance_wallet';
-    if (type?.includes('REVIEW') || resourceType === 'REVIEW') return 'star';
-    if (type?.includes('REPORT')) return 'flag';
-    return 'notifications';
-  };
 
   return (
     <LocalizedContent>
@@ -274,14 +265,13 @@ export default function NotificationsPage() {
                       {new Date(item.createdAt).toLocaleString('vi-VN')}
                     </time>
                     <div className="member-notification-actions flex items-center gap-3 mt-3 pt-2 border-t border-gray-100/70 text-xs">
-                      {item.resourceType && item.resourceId && (
+                      {canOpenNotification(item) && (
                         <button
                           disabled={busy}
                           className="font-bold text-primary hover:underline inline-flex items-center gap-1 cursor-pointer"
                           onClick={() => run(async () => {
                             if (!item.isRead) await notificationService.markRead(idOf(item));
-                            if (['PRODUCT_REPORT_RESOLVED', 'REPORTING_POLICY'].includes(item.type)) setCurrentView('report-history');
-                            else openResource(item.resourceType, idOf(item.resourceId));
+                            openNotification(item, { setCurrentView, openResource });
                           })}
                         >
                           Xem chi tiết <Icon name="arrow_forward" className="text-[11px]" />

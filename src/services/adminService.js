@@ -58,12 +58,3 @@ export async function listVerifications(params = {}) {
 export async function reviewVerification(id, approved, reason) {
   return (await apiClient.patch(approved ? API_ENDPOINTS.sellerVerification.approve(id) : API_ENDPOINTS.sellerVerification.reject(id), { reason })).data.data;
 }
-export async function listDisputes(params = {}) {
-  return (await apiClient.get(API_ENDPOINTS.disputes.admin, { params })).data.data;
-}
-export async function reviewDispute(id, note) {
-  return (await apiClient.patch(API_ENDPOINTS.disputes.review(id), { note })).data.data;
-}
-export async function resolveDispute(id, status, resolution, expectedVersion) {
-  return (await apiClient.patch(API_ENDPOINTS.disputes.resolve(id), { status, resolution, expectedVersion })).data.data;
-}

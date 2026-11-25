@@ -1,4 +1,4 @@
-import NotificationBadge from './NotificationBadge';
+import NotificationBell from './NotificationBell';
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -468,7 +468,7 @@ export default function Navbar() {
           </form>
 
           <div className="account-actions flex items-center gap-3 flex-shrink-0">
-            {user && <button className="store-notification-bell" aria-label={text('Mở thông báo', 'Open notifications')} onClick={() => setCurrentView('notifications')}><Icon name="notifications_none" /><NotificationBadge /></button>}
+            {user && <NotificationBell className="store-notification-bell" label={text('Mở thông báo', 'Open notifications')} />}
             <button
               className="bag-button relative p-2.5 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
               onClick={() => (user ? setCurrentView('checkout') : openAuth())}
@@ -561,13 +561,15 @@ export default function Navbar() {
                         <Icon name="location_on" className="text-base text-gray-400" />
                         Địa chỉ
                       </button>
-                      <button
-                        className="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 rounded-xl hover:bg-gray-50 hover:text-primary text-left transition-colors"
-                        onClick={() => openAccount('report-history')}
-                      >
-                        <Icon name="flag" className="text-base text-gray-400" />
-                        Báo cáo của tôi
-                      </button>
+                      {user.role !== 'seller' && (
+                        <button
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 rounded-xl hover:bg-gray-50 hover:text-primary text-left transition-colors"
+                          onClick={() => openAccount('report-history')}
+                        >
+                          <Icon name="flag" className="text-base text-gray-400" />
+                          Báo cáo của tôi
+                        </button>
+                      )}
                       <button
                         className="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 rounded-xl hover:bg-gray-50 hover:text-primary text-left transition-colors"
                         onClick={() => openAccount('account-password')}

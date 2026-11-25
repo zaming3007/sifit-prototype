@@ -44,7 +44,7 @@ export async function verifyAccountOperations({ browser, base, requireBackend, a
   await adminPage.getByRole('button', { name: 'Vận hành', exact: true }).click();
   await expect(adminPage.getByText('Sức khỏe tác vụ nền', { exact: true })).toBeVisible();
   await expect(adminPage.getByText(/SMTP: Chưa cấu hình/)).toBeVisible();
-  for (const tab of ['Thông báo lỗi', 'Email lỗi', 'Đơn quá hạn', 'Khiếu nại quá hạn', 'Thu hồi sau chi trả']) {
+  for (const tab of ['Thông báo lỗi', 'Email lỗi', 'Đơn quá hạn', 'Thu hồi sau chi trả']) {
     await adminPage.getByRole('button', { name: tab, exact: true }).click();
     await expect(adminPage.locator('.ops-page')).toBeVisible();
   }
@@ -56,21 +56,15 @@ export async function verifyAccountOperations({ browser, base, requireBackend, a
   const Dispute = requireBackend('./src/models/dispute.model');
   const Recovery = requireBackend('./src/models/sellerRecovery.model');
   const seller = await User.findOne({ email: 'seller@integration.test' });
-  const admin = await User.findOne({ email: 'admin@integration.test' });
   const order = await Order.create({ checkoutGroupId: new mongoose.Types.ObjectId(), buyerId: user._id, sellerId: seller._id,
     items: [{ productId: new mongoose.Types.ObjectId(), title: 'Recovery browser fixture', price: 100000, quantity: 1 }],
     shippingAddress: { recipientName: user.fullName, phone: '0901234567', addressLine: 'Street', ward: 'Ward', city: 'City' },
     subtotal: 100000, buyerTotal: 100000, sellerProceeds: 90000, commissionAmount: 10000,
     commissionRateBasisPoints: 1000, paymentStatus: 'PAID', orderStatus: 'COMPLETED', reservationExpiresAt: new Date() });
   await Payout.create({ sellerId: seller._id, orderIds: [order._id], amount: 90000, status: 'PAID', provider: 'manual', completedAt: new Date(Date.now() - 3600000), idempotencyKey: 'browser-recovery' });
-  await adminPage.getByLabel('ID đơn đã chi trả', { exact: true }).fill(order.id);
-  await adminPage.getByLabel('Lý do tiếp nhận / thu hồi', { exact: true }).fill('Independent evidence reviewed after seller payout');
-  await adminPage.getByRole('button', { name: 'Tiếp nhận khiếu nại sau chi trả', exact: true }).click();
-  await expect.poll(() => Dispute.countDocuments({ orderId: order._id })).toBe(1);
-  const dispute = await Dispute.findOne({ orderId: order._id });
-  await requireBackend('./src/services/dispute.service').resolveDispute(dispute.id, admin, { status: 'RESOLVED_BUYER', resolution: 'Full refund after independently reviewed evidence', expectedVersion: dispute.contentVersion });
-  await adminPage.getByRole('button', { name: 'Vận hành', exact: true }).click();
-  await adminPage.getByRole('button', { name: 'Thu hồi sau chi trả', exact: true }).click();
+  await expect(adminPage.getByRole('button', { name: 'Tiếp nhận khiếu nại sau chi trả', exact: true })).toHaveCount(0);
+  await Dispute.create({ orderId: order._id, buyerId: user._id, sellerId: seller._id, reason: 'OTHER',
+    description: 'Historical case fixture', status: 'RESOLVED_BUYER', resolution: 'Full refund approved before retirement' });
   await adminPage.getByLabel('ID đơn đã chi trả', { exact: true }).fill(order.id);
   await adminPage.getByLabel('Lý do tiếp nhận / thu hồi', { exact: true }).fill('Collect paid seller allocation before buyer refund');
   await adminPage.getByRole('button', { name: 'Mở hồ sơ thu hồi', exact: true }).click();
@@ -92,5 +86,5 @@ export async function verifyAccountOperations({ browser, base, requireBackend, a
   await adminPage.setViewportSize({ width: 390, height: 844 });
   await expect.poll(() => adminPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await adminPage.setViewportSize({ width: 1440, height: 1000 });
-  console.log('PASS late complaint, recovery creation, actual multipart receipt, private proof preview and mobile layout');
+  console.log('PASS historical recovery creation, actual multipart receipt, private proof preview and mobile layout');
 }

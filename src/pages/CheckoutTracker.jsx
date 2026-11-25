@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import LocalizedContent from '../components/LocalizedContent';
 import AddressBook from '../components/AddressBook';
@@ -9,9 +9,9 @@ import '../checkout.css';
 import { Panel, Tabs, Feedback, Field } from '../components/MarketplaceUI';
 import { useAction } from '../hooks/useAction';
 import { money, idOf } from '../utils/marketplace';
+import { forgetCheckoutPayment, readCheckoutPayment, rememberCheckoutPayment } from '../utils/paymentSession';
 
 import * as addressService from '../services/addressService';
-import * as disputeService from '../services/disputeService';
 import * as authService from '../services/authService';
 import * as paymentService from '../services/paymentService';
 import PaymentPanel from '../components/PaymentPanel';
@@ -20,36 +20,31 @@ import { collectPages } from '../services/pagination';
 import * as offerService from '../services/offerService';
 
 const emptyAddress = { recipientName: '', phone: '', addressLine: '', ward: '', city: '' };
+const resumablePaymentStatuses = ['INITIATED', 'PENDING', 'SUCCEEDED'];
 
 export default function CheckoutTracker({ historyOnly = false }) {
-  const { user, cart, removeFromCart, orders, createOrder, fetchOrders, checkoutProduct, setCheckoutProduct, logoutUser, browse, openResource } = useApp();
-  const [tab, setTab] = useState(!historyOnly && (checkoutProduct || cart.length) ? 'checkout' : 'orders');
+  const { user, cart, removeFromCart, orders, createOrder, fetchOrders, checkoutProduct, setCheckoutProduct, logoutUser, browse } = useApp();
+  const userId = idOf(user);
+  const [tab, setTab] = useState(() =>
+    !historyOnly && !readCheckoutPayment(userId) && (checkoutProduct || cart.length) ? 'checkout' : 'orders',
+  );
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState('');
   const deliveryAddresses = addresses.filter(item => item.addressType !== 'PICKUP');
   const selectedAddress = deliveryAddresses.find(item => idOf(item) === selectedAddressId)
     || deliveryAddresses.find(item => item.isDefault) || deliveryAddresses[0];
   const shipping = selectedAddress ? { ...selectedAddress, city: selectedAddress.province } : emptyAddress;
-  const [disputes, setDisputes] = useState([]);
-  const [createDisputeOpen, setCreateDisputeOpen] = useState(false);
-  const [newDispute, setNewDispute] = useState({
-    orderId: '',
-    reason: 'ITEM_NOT_AS_DESCRIBED',
-    description: '',
-  });
-  const disputeReasonLabels = {
-    ITEM_NOT_RECEIVED: 'Chưa nhận hàng',
-    ITEM_NOT_AS_DESCRIBED: 'Không đúng mô tả',
-    DAMAGED_ITEM: 'Hàng hỏng',
-    WRONG_ITEM: 'Sai sản phẩm',
-    OTHER: 'Khác',
-  };
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '' });
   const { busy, error, run } = useAction();
   const attempt = useRef(null);
-  const [created, setCreated] = useState(null);
   const [checkoutPayment, setCheckoutPayment] = useState(null);
+  const paymentSection = useRef(null);
+  const paymentKeys = useRef(new Map());
+  const paymentRequest = useRef(0);
+  const paymentOpening = useRef(false);
   const [paymentError, setPaymentError] = useState('');
+  const [restoreError, setRestoreError] = useState('');
+  const [restoreAttempt, setRestoreAttempt] = useState(0);
   const [acceptedOffers, setAcceptedOffers] = useState([]);
   const [offersLoading, setOffersLoading] = useState(true);
   const [offersError, setOffersError] = useState('');
@@ -88,9 +83,57 @@ export default function CheckoutTracker({ historyOnly = false }) {
     });
   }, [run]);
 
+  const openPayment = useCallback(async groupId => {
+    const request = ++paymentRequest.current;
+    paymentOpening.current = true;
+    if (!paymentKeys.current.has(groupId)) paymentKeys.current.set(groupId, crypto.randomUUID());
+    try {
+      const payment = await paymentService.createPayment({ checkoutGroupId: groupId, idempotencyKey: paymentKeys.current.get(groupId) });
+      if (request !== paymentRequest.current) return;
+      if (payment.provider === 'payos' && resumablePaymentStatuses.includes(payment.status)) {
+        rememberCheckoutPayment(userId, idOf(payment));
+      }
+      setCheckoutPayment(payment);
+      setPaymentError('');
+      setRestoreError('');
+    } finally {
+      if (request === paymentRequest.current) paymentOpening.current = false;
+    }
+  }, [userId]);
+  const updateCheckoutPayment = useCallback(next => {
+    if (['FAILED', 'EXPIRED'].includes(next.status)) paymentKeys.current.delete(idOf(next.checkoutGroupId));
+    if (!resumablePaymentStatuses.includes(next.status)) forgetCheckoutPayment(userId, idOf(next));
+    setCheckoutPayment(current => idOf(current) === idOf(next) ? next : current);
+  }, [userId]);
+  const viewPayment = useCallback(() => {
+    const section = paymentSection.current;
+    if (!section) return;
+    const { top, bottom } = section.getBoundingClientRect();
+    if (top < 170 || bottom > window.innerHeight) section.scrollIntoView({ block: 'start' });
+  }, []);
+  const paymentId = idOf(checkoutPayment);
   useEffect(() => {
-    if (tab === 'disputes') run(async () => setDisputes((await collectPages(disputeService.listMyDisputes)).items));
-  }, [tab, run]);
+    if (tab !== 'orders' || paymentId || paymentOpening.current || import.meta.env.VITE_DEMO_MODE === 'true') return;
+    const id = readCheckoutPayment(userId);
+    if (!id) return;
+    const request = paymentRequest.current;
+    const controller = new AbortController();
+    setRestoreError('');
+    paymentService.getPayment(id, { signal: controller.signal }).then(payment => {
+      if (controller.signal.aborted || request !== paymentRequest.current) return;
+      if (!resumablePaymentStatuses.includes(payment.status)) forgetCheckoutPayment(userId, id);
+      setCheckoutPayment(payment);
+      if (!['INITIATED', 'PENDING'].includes(payment.status)) fetchOrders().catch(() => {});
+    }).catch(cause => {
+      if (controller.signal.aborted || request !== paymentRequest.current) return;
+      if ([403, 404].includes(cause.response?.status)) forgetCheckoutPayment(userId, id);
+      else setRestoreError(getApiErrorMessage(cause));
+    });
+    return () => controller.abort();
+  }, [tab, paymentId, userId, restoreAttempt, fetchOrders]);
+  useEffect(() => {
+    if (paymentId && tab === 'orders') viewPayment();
+  }, [paymentId, tab, viewPayment]);
 
   const placeOrder = event => {
     event.preventDefault();
@@ -103,14 +146,13 @@ export default function CheckoutTracker({ historyOnly = false }) {
       if (attempt.current?.fingerprint !== fingerprint) attempt.current = { fingerprint, key: crypto.randomUUID() };
       const result = await createOrder({ shippingAddress: address, idempotencyKey: attempt.current.key, offerIds });
       if (!result.success) throw new Error(result.message);
-      setCreated(result.data); setCheckoutProduct(null); setTab('orders');
+      setCheckoutProduct(null); setTab('orders');
       if (import.meta.env.VITE_DEMO_MODE === 'true') {
         setPaymentError('Đơn thử nghiệm đã được lưu. Bản giới thiệu chưa mở thanh toán; không cần chuyển tiền.');
         return;
       }
       try {
-        setCheckoutPayment(await paymentService.createPayment({ checkoutGroupId: idOf(result.data), idempotencyKey: crypto.randomUUID() }));
-        setPaymentError('');
+        await openPayment(idOf(result.data));
       } catch (cause) {
         setPaymentError(getApiErrorMessage(cause));
       }
@@ -135,12 +177,10 @@ export default function CheckoutTracker({ historyOnly = false }) {
             historyOnly
               ? [
                   ['orders', 'Đơn mua', 'receipt_long'],
-                  ['disputes', 'Khiếu nại', 'shield'],
                 ]
               : [
                   ['checkout', `Giỏ hàng (${cart.length})`, 'shopping_bag'],
                   ['orders', 'Đơn mua', 'receipt_long'],
-                  ['disputes', 'Khiếu nại', 'shield'],
                 ]
           }
         />
@@ -382,18 +422,12 @@ export default function CheckoutTracker({ historyOnly = false }) {
         {tab === 'orders' && (
           <div className="member-order-list space-y-4">
             {!historyOnly && (
-              <BuyerHeading title="Đơn mua của bạn" description="Theo dõi trạng thái giao hàng, kiểm tra QR thanh toán và gửi đánh giá.">
+              <BuyerHeading title="Đơn mua của bạn" description="Theo dõi đơn hàng và thanh toán.">
                 <button disabled={busy} className="member-secondary inline-flex items-center gap-1.5" onClick={() => run(fetchOrders)}>
                   <Icon name="refresh" className={`text-xs ${busy ? 'animate-spin' : ''}`} />
                   Làm mới đơn mua
                 </button>
               </BuyerHeading>
-            )}
-            {created && (
-              <p role="status" className="p-4 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-2xl text-xs font-semibold flex items-center gap-2">
-                <Icon name="task_alt" className="text-emerald-600 text-lg flex-shrink-0" />
-                Đã tạo đơn hàng thành công. Tổng thanh toán: {money(created.buyerTotal)}. Quét mã QR bên dưới để thanh toán.
-              </p>
             )}
             {paymentError && (
               <p role="alert" className="p-4 bg-amber-50 text-amber-800 border border-amber-200 rounded-2xl text-xs font-semibold flex items-center gap-2">
@@ -401,7 +435,13 @@ export default function CheckoutTracker({ historyOnly = false }) {
                 Đơn đã được lưu. {paymentError} Bạn có thể bấm Thanh toán bên dưới để thử lại.
               </p>
             )}
-            {checkoutPayment && <PaymentPanel payment={checkoutPayment} onUpdate={setCheckoutPayment} onConfirmed={fetchOrders} />}
+            {restoreError && <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+              <p role="alert">Chưa khôi phục được thanh toán. {restoreError}</p>
+              <button className="member-secondary mt-2" onClick={() => setRestoreAttempt(value => value + 1)}>Thử khôi phục thanh toán</button>
+            </div>}
+            {checkoutPayment && <div className="buyer-payment-section" ref={paymentSection}>
+              <PaymentPanel key={paymentId} payment={checkoutPayment} onUpdate={updateCheckoutPayment} onConfirmed={fetchOrders} onRetry={() => openPayment(idOf(checkoutPayment.checkoutGroupId))} />
+            </div>}
             {historyOnly && (
               <button disabled={busy} onClick={() => run(fetchOrders)} className="member-secondary inline-flex items-center gap-1.5">
                 <Icon name="refresh" className="text-xs" />
@@ -418,209 +458,12 @@ export default function CheckoutTracker({ historyOnly = false }) {
               </div>
             )}
             {orders.map(order => (
-              <OrderCard key={order._id} order={order} onChange={fetchOrders} />
+              <OrderCard key={order._id} order={order} onChange={fetchOrders} onPay={openPayment} activePayment={checkoutPayment} onViewPayment={viewPayment} />
             ))}
           </div>
         )}
 
         {tab === 'addresses' && <AddressBook onChange={setAddresses} />}
-
-        {tab === 'disputes' && (
-          <Panel title="Khiếu nại của tôi" icon="shield">
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-100">
-              <p className="text-xs text-gray-500">
-                Gửi yêu cầu bảo vệ người mua nếu đơn hàng chậm giao, sai mô tả hoặc phát sinh sự cố.
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() =>
-                    run(async () => setDisputes((await collectPages(disputeService.listMyDisputes)).items))
-                  }
-                  className="btn-outline text-xs py-2 px-3 inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Icon name="refresh" className="text-xs" />
-                  Làm mới
-                </button>
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => {
-                    const defaultOrder =
-                      orders.find(o => o.disputeEligibility?.eligible && !o.activeDispute) || orders[0];
-                    setNewDispute({
-                      orderId: defaultOrder?._id || '',
-                      reason:
-                        defaultOrder?.disputeEligibility?.allowedReasons?.[0] || 'ITEM_NOT_AS_DESCRIBED',
-                      description: '',
-                    });
-                    setCreateDisputeOpen(prev => !prev);
-                  }}
-                  className="btn-primary text-xs py-2 px-4 inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Icon name={createDisputeOpen ? 'close' : 'add'} className="text-sm" />
-                  {createDisputeOpen ? 'Đóng biểu mẫu' : 'Tạo khiếu nại'}
-                </button>
-              </div>
-            </div>
-
-            {createDisputeOpen && (
-              <form
-                className="p-4 sm:p-5 bg-emerald-50/50 border border-emerald-200/80 rounded-2xl space-y-3.5 my-3 animate-fade-in"
-                onSubmit={event => {
-                  event.preventDefault();
-                  if (!newDispute.orderId) return;
-                  run(async () => {
-                    await disputeService.createDispute(newDispute.orderId, {
-                      reason: newDispute.reason,
-                      description: newDispute.description.trim(),
-                    });
-                    setCreateDisputeOpen(false);
-                    setNewDispute({ orderId: '', reason: 'ITEM_NOT_AS_DESCRIBED', description: '' });
-                    await Promise.all([
-                      fetchOrders(),
-                      collectPages(disputeService.listMyDisputes).then(res => setDisputes(res.items)),
-                    ]);
-                  });
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="font-heading font-bold text-sm text-gray-900 flex items-center gap-2">
-                    <Icon name="shield" className="text-primary text-base" />
-                    Tạo khiếu nại đơn hàng mới
-                  </h3>
-                </div>
-
-                {!orders.length ? (
-                  <div className="p-3 bg-white rounded-xl border border-gray-100 text-xs text-gray-600 flex items-center justify-between gap-3">
-                    <span>Bạn chưa có đơn mua nào để tạo khiếu nại.</span>
-                    <button
-                      type="button"
-                      onClick={() => browse()}
-                      className="text-primary font-bold hover:underline"
-                    >
-                      Khám phá sản phẩm
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <Field label="Chọn đơn hàng cần khiếu nại" icon="receipt_long">
-                        <select
-                          required
-                          className="input-field"
-                          value={newDispute.orderId}
-                          onChange={event => {
-                            const ord = orders.find(o => o._id === event.target.value);
-                            setNewDispute(prev => ({
-                              ...prev,
-                              orderId: event.target.value,
-                              reason:
-                                ord?.disputeEligibility?.allowedReasons?.[0] || prev.reason,
-                            }));
-                          }}
-                        >
-                          <option value="">-- Chọn đơn hàng --</option>
-                          {orders.map(ord => (
-                            <option key={ord._id} value={ord._id}>
-                              Đơn #{ord._id.slice(-8)} · {ord.items?.[0]?.title || 'Sản phẩm'} ({money(ord.totalAmount)})
-                            </option>
-                          ))}
-                        </select>
-                      </Field>
-
-                      <Field label="Lý do khiếu nại" icon="flag">
-                        <select
-                          required
-                          className="input-field"
-                          value={newDispute.reason}
-                          onChange={event =>
-                            setNewDispute(prev => ({ ...prev, reason: event.target.value }))
-                          }
-                        >
-                          {Object.entries(disputeReasonLabels).map(([key, label]) => (
-                            <option key={key} value={key}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
-                      </Field>
-                    </div>
-
-                    <Field label="Mô tả chi tiết vấn đề" icon="edit">
-                      <textarea
-                        required
-                        rows={3}
-                        maxLength={2000}
-                        className="input-field"
-                        value={newDispute.description}
-                        onChange={event =>
-                          setNewDispute(prev => ({ ...prev, description: event.target.value }))
-                        }
-                        placeholder="Mô tả rõ tình trạng sản phẩm hoặc sự cố giao nhận để đội ngũ SiFit hỗ trợ nhanh nhất..."
-                      />
-                    </Field>
-
-                    <div className="flex items-center gap-2 pt-1">
-                      <button
-                        type="submit"
-                        disabled={busy || !newDispute.orderId || !newDispute.description.trim()}
-                        className="btn-primary text-xs py-2.5 px-5 inline-flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <Icon name="send" className="text-xs" />
-                        Gửi khiếu nại
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => setCreateDisputeOpen(false)}
-                        className="btn-outline text-xs py-2.5 px-4 cursor-pointer"
-                      >
-                        Hủy
-                      </button>
-                    </div>
-                  </>
-                )}
-              </form>
-            )}
-
-            {!disputes.length && !createDisputeOpen && (
-              <div className="text-center py-8 text-gray-400 text-xs">
-                <Icon name="verified_user" className="text-3xl text-gray-300 mx-auto mb-2" />
-                Chưa có khiếu nại nào. Các giao dịch trên Sifit đều được bảo vệ.
-              </div>
-            )}
-            {disputes.map(item => (
-              <div key={idOf(item)} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="font-bold text-xs text-gray-900 flex items-center gap-1.5">
-                    <Icon name="receipt_long" className="text-xs text-gray-400" />
-                    Đơn hàng #{idOf(item.orderId)?.slice(-8)}
-                  </p>
-                  <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    {item.status}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-700">
-                  <strong className="text-gray-900">{item.reason}:</strong> {item.description}
-                </p>
-                {item.resolution && (
-                  <p className="text-xs text-emerald-700 bg-emerald-50 p-2 rounded-xl">
-                    Kết quả xử lý: {item.resolution}
-                  </p>
-                )}
-                <button
-                  onClick={() => openResource('DISPUTE', idOf(item))}
-                  className="btn-outline text-xs py-1.5 px-3 inline-flex items-center gap-1.5 mt-2"
-                >
-                  <Icon name="arrow_forward" className="text-xs" />
-                  Xem bằng chứng & trả hàng
-                </button>
-              </div>
-            ))}
-          </Panel>
-        )}
 
         {tab === 'profile' && (
           <Panel title="Thông tin tài khoản" icon="person">

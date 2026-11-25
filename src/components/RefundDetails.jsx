@@ -27,7 +27,7 @@ export default function RefundDetails({ refund, onChange }) {
     <Facts entries={[[ 'Mã khoản hoàn', idOf(refund)], ['Số tiền hoàn', money(refund.amount)], ['Trạng thái khoản hoàn', refundLabels[refund.status] || refund.status],
       ['Lý do', refund.reason], ['Ngày lập', date(refund.createdAt)], ['Ngày hoàn tất', date(refund.completedAt)]]} />
     <Feedback busy={busy} error={error} />
-    <div className="ops-actions"><button disabled={busy} onClick={() => run(onChange)}>Tải lại thông tin hoàn tiền</button>{refund.orderId ? <button onClick={() => openResource('ORDER', idOf(refund.orderId))}>Xem đơn liên quan</button> : <button onClick={() => openResource('PAYMENT', idOf(refund.paymentId))}>Xem thanh toán liên quan</button>}{refund.disputeId && <button onClick={() => openResource('DISPUTE', idOf(refund.disputeId))}>Xem khiếu nại liên quan</button>}</div>
+    <div className="ops-actions"><button disabled={busy} onClick={() => run(onChange)}>Tải lại thông tin hoàn tiền</button>{refund.orderId ? <button onClick={() => openResource('ORDER', idOf(refund.orderId))}>Xem đơn liên quan</button> : <button onClick={() => openResource('PAYMENT', idOf(refund.paymentId))}>Xem thanh toán liên quan</button>}</div>
     {bankView?.accountNumber && <div className="refund-bank"><h3>Tài khoản nhận tiền {refund.bankSnapshot?.accountNumber ? 'đã chốt' : 'người mua cung cấp'}</h3><Facts entries={[[ 'Ngân hàng', bankView.bankName ], ['Số tài khoản', bankView.accountNumber], ['Chủ tài khoản', bankView.accountName]]} /></div>}
     {!admin && ['REQUESTED', 'PENDING'].includes(refund.status) && <>
       {refund.bank?.accountNumber && <button disabled={busy} onClick={() => setBankOpen(value => !value)}>Sửa tài khoản nhận hoàn</button>}

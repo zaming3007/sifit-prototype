@@ -73,9 +73,6 @@ export default function Footer() {
               <button onClick={() => info('about')} className="text-left hover:text-primary transition-colors cursor-pointer">
                 {t('aboutSifit')}
               </button>
-              <button onClick={() => info('returnPolicy')} className="text-left hover:text-primary transition-colors cursor-pointer">
-                {t('returnPolicy')}
-              </button>
               <button onClick={() => info('termsUse')} className="text-left hover:text-primary transition-colors cursor-pointer">
                 {t('terms')}
               </button>

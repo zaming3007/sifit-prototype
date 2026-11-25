@@ -3,8 +3,8 @@ export async function uploadDocument(id, kind, file) {
   const form = new FormData(); form.append('document', file);
   return (await apiClient.post(`/seller/verification/${id}/documents/${kind}`, form, { headers: { 'Content-Type': undefined } })).data.data;
 }
-export async function documentBlob(id, kind) {
-  try { return (await apiClient.get(`/seller-verifications/${id}/documents/${kind}`, { responseType: 'blob' })).data; }
+export async function documentBlob(id, kind, { signal } = {}) {
+  try { return (await apiClient.get(`/seller-verifications/${id}/documents/${kind}`, { responseType: 'blob', signal })).data; }
   catch (error) { if (error.response?.data instanceof Blob) { try { error.response.data = JSON.parse(await error.response.data.text()); } catch { /* Keep original error. */ } } throw error; }
 }
 export async function downloadDocument(id, kind) {

@@ -35,7 +35,11 @@ try {
   await Receipt.create({ provider: 'payos', reference: 'BANK-RECEIPT-001', paymentId: payments[0]._id, checkoutGroupId: group, providerPaymentId: 'audit', merchantReference: 'AUDIT-BANK-001', amount: 150000, currency: 'VND', occurredAt: new Date(), status: 'MATCHED', source: 'WEBHOOK' });
   await Ledger.create({ sourceType: 'PAYMENT', sourceId: payments[0].id, sourceEventKey: 'audit-ledger', description: 'Audit incoming payment', lines: [{ account: 'BANK', debit: 150000, credit: 0 }, { account: 'ESCROW', debit: 0, credit: 150000 }] });
   const notification = (recipient, i) => ({ recipientId: recipient._id, actorId: other._id, type: 'PRODUCT_APPROVED', title: `Thông báo kiểm tra ${i}`, body: 'Bấm để xem đúng sản phẩm liên quan.', resourceType: 'PRODUCT', resourceId: product._id, eventKey: `${recipient.id}:audit:${i}` });
-  await Notification.insertMany(Array.from({ length: 28 }, (_, i) => notification(buyer, i)));
+  await Notification.insertMany([
+    ...Array.from({ length: 26 }, (_, i) => notification(buyer, i)),
+    { ...notification(buyer, 26), type: 'DISPUTE_OPENED', title: 'Dispute opened', body: 'A buyer opened a dispute for an order', resourceType: 'DISPUTE' },
+    { ...notification(buyer, 27), type: 'DELIVERY_CONFIRMED', title: 'Buyer confirmed receipt', body: 'The buyer confirmed receipt for an order', resourceType: 'ORDER' },
+  ]);
   server = http.createServer(app); sockets.initSocket(server);
   await new Promise(resolve => server.listen(5023, resolve));
   vite = await createServer({ server: { host: 'localhost', port: 5193, strictPort: true } }); await vite.listen();
@@ -49,10 +53,27 @@ try {
   };
   const page = await makePage(); await login(page, buyer);
   await expect(page.locator('.store-notification-bell .notification-unread-badge')).toHaveText('28');
+  const buyerBell = page.getByRole('button', { name: 'Mở thông báo', exact: true });
+  const preview = page.getByRole('region', { name: 'Thông báo gần đây', exact: true });
+  const homeUrl = page.url();
+  await buyerBell.click();
+  await expect(preview.locator('.notification-preview-card')).toHaveCount(8);
+  await expect(page).toHaveURL(homeUrl);
+  await expect(preview.locator('[data-unread=true]')).toHaveCount(8);
+  await expect(preview.getByText('Người mua đã xác nhận nhận hàng', { exact: true })).toBeVisible();
+  await expect(preview.getByText('Có khiếu nại mới', { exact: true })).toBeVisible();
+  await expect(preview.getByText('Buyer confirmed receipt', { exact: true })).toHaveCount(0);
   await requireBackend('./src/services/notification.service').createNotification(notification(buyer, 28));
+  await expect(preview.getByText('Thông báo kiểm tra 28', { exact: true })).toBeVisible();
   await expect(page.locator('.store-notification-bell .notification-unread-badge')).toHaveText('29');
-  await page.locator('.store-notification-bell').click();
+  await page.keyboard.press('Escape');
+  await expect(preview).toHaveCount(0);
+  await expect(buyerBell).toBeFocused();
+  await buyerBell.click();
+  await preview.getByRole('button', { name: 'Xem tất cả thông báo', exact: true }).click();
   await expect(page.locator('.member-notification')).toHaveCount(20);
+  await expect(page.getByRole('heading', { name: 'Người mua đã xác nhận nhận hàng', exact: true })).toBeVisible();
+  await expect(page.getByText('Người mua đã mở khiếu nại cho một đơn hàng.', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Trang sau', exact: true }).click();
   await expect(page.locator('.member-notification')).toHaveCount(9);
   await page.getByRole('button', { name: 'Trang trước', exact: true }).click();
@@ -60,7 +81,10 @@ try {
   await expect(page.getByRole('heading', { name: product.title, exact: true })).toBeVisible();
   await expect(page.locator('.store-notification-bell .notification-unread-badge')).toHaveText('28');
   await page.getByRole('button', { name: 'Về thông báo', exact: true }).click();
-  await page.getByRole('button', { name: 'Đọc tất cả', exact: true }).click();
+  await buyerBell.click();
+  await preview.getByRole('button', { name: 'Đọc tất cả', exact: true }).click();
+  await expect(preview.locator('[data-unread=true]')).toHaveCount(0);
+  await page.keyboard.press('Escape');
   await expect(page.locator('.store-notification-bell .notification-unread-badge')).toHaveCount(0);
   await page.getByRole('button', { name: 'Chưa đọc (0)', exact: true }).click();
   await expect(page.locator('.member-notification')).toHaveCount(0);
@@ -76,12 +100,22 @@ try {
   expect(await page.evaluate(async () => JSON.stringify((await import('/src/utils/actionNotifier.js')).getActionHistory()))).not.toContain('BUYER-ONLY-HISTORY');
   await requireBackend('./src/services/notification.service').createNotification(notification(seller, 1));
   await expect(page.locator('.seller-notification-button .notification-unread-badge')).toHaveText('1');
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('.seller-notification-button').click();
-  await page.locator('.member-notification').first().getByRole('button', { name: 'Xem chi tiết', exact: true }).click();
+  await expect(preview.locator('.notification-preview-card')).toHaveCount(1);
+  const box = await preview.boundingBox();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(390);
+  await preview.locator('.notification-preview-card').first().click();
   await expect(page.getByRole('heading', { name: product.title, exact: true })).toBeVisible();
-  console.log('PASS real-time unread counts, pagination, read-all, localized error popup, private account history, seller public-product notification links');
+  console.log('PASS buyer and seller notification previews, real-time updates, pagination, read-all and seller links');
 
   const adminPage = await makePage(); await login(adminPage, admin);
+  await adminPage.getByRole('button', { name: 'Mở thông báo', exact: true }).click();
+  const adminPreview = adminPage.getByRole('region', { name: 'Thông báo gần đây', exact: true });
+  await expect(adminPreview.getByText('Bạn chưa có thông báo nào.', { exact: true })).toBeVisible();
+  await adminPage.getByRole('button', { name: 'Mở thông báo', exact: true }).click();
+  await expect(adminPreview).toHaveCount(0);
   await adminPage.getByRole('button', { name: 'Giao dịch', exact: true }).click();
   await expect(adminPage.locator('.ops-page .ops-card')).toHaveCount(2);
   await adminPage.getByLabel('Tìm giao dịch', { exact: true }).fill('AUDIT-BANK-001');

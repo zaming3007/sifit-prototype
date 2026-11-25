@@ -18,3 +18,40 @@
 .workflow-form .input-field { width: 100%; min-width: 0; }
 .workflow-form button { justify-self: start; }
 @media (max-width: 600px) { .payment-panel { padding: 18px; } .payment-qr-layout { justify-content: center; gap: 18px; } .payment-qr-layout dl { width: 100%; } .workflow-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.payment-panel.payment-panel-compact { gap: 12px; padding: 16px 20px; }
+.payment-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px 20px; flex-wrap: wrap; }
+.payment-panel-heading h3 { margin: 0; font-size: 1.12rem; }
+.payment-panel-heading .payment-amount { font-size: 1.28rem; }
+.payment-panel-compact .payment-qr-layout { gap: 10px 20px; justify-content: start; }
+.payment-panel-compact .payment-qr-layout > svg { width: min(196px, 100%); height: auto; }
+.payment-qr-info { flex: 1 1 220px; min-width: 0; }
+.payment-panel-compact .payment-qr-info dl { margin: 8px 0 0; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 8px 18px; max-width: 430px; }
+.payment-panel-compact .payment-qr-info dt { margin: 0; color: #5a6b53; font-size: .73rem; }
+.payment-panel-compact .payment-qr-info dd { font-size: .85rem; }
+.payment-panel-compact .payment-actions { gap: 8px; }
+.payment-panel-compact .payment-actions > a { display: inline-flex; align-items: center; width: fit-content; padding: 7px 12px; }
+.payment-success-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(25rem, calc(100% - 2rem));
+  padding: 24px;
+  border: 1px solid #dce7d8;
+  border-radius: 20px;
+  background: #fff;
+  color: #253328;
+  box-shadow: 0 16px 42px #15231b33;
+  text-align: center;
+}
+.payment-success-dialog::backdrop { background: #18241c80; }
+.payment-success-icon { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 10px; border-radius: 50%; background: #e8f3e8; color: #237049; }
+.payment-success-icon svg { width: 26px; height: 26px; }
+.payment-success-dialog h2 { font-size: 1.36rem; font-weight: 700; margin: 0 0 6px; }
+.payment-success-dialog form { margin-top: 16px; }
+.payment-success-dialog button { padding: 8px 24px; border-radius: 999px; background: #20553e; color: #fff; font-weight: 600; }
+
+@media (max-width: 480px) {
+  .payment-panel.payment-panel-compact { padding: 14px; }
+  .payment-panel-compact .payment-qr-layout { justify-content: center; }
+}

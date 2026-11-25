@@ -61,7 +61,7 @@ try {
     resetSharedIp();
     await page.goto('http://localhost:5288/?view=catalog');
     await page.locator('.product-title').filter({ hasText: product.title }).click();
-    await page.getByRole('button', { name: 'Báo cáo sản phẩm', exact: true }).click();
+    await page.getByRole('button', { name: 'Báo cáo sản phẩm vi phạm', exact: true }).click();
     return page.getByRole('dialog', { name: 'Báo cáo sản phẩm', exact: true });
   };
   const fillReport = async dialog => {
@@ -80,7 +80,7 @@ try {
   await fillReport(dialog);
   await expect(dialog.getByRole('status')).toContainText('Đã gửi báo cáo');
   await dialog.getByRole('button', { name: 'Đóng cửa sổ' }).click();
-  await buyerPage.getByRole('button', { name: 'Báo cáo sản phẩm', exact: true }).click();
+  await buyerPage.getByRole('button', { name: 'Báo cáo sản phẩm vi phạm', exact: true }).click();
   dialog = buyerPage.getByRole('dialog');
   await expect(dialog.getByRole('status')).toContainText('Bạn đã báo cáo sản phẩm này');
   expect(await Report.countDocuments()).toBe(1);

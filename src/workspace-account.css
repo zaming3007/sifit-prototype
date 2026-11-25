@@ -1,0 +1,13 @@
+.workspace-account { position: relative; }
+.workspace-account-trigger { padding: 4px 6px; border-radius: 8px; display: flex; align-items: center; gap: 10px; color: #425a4a; font-size: 11px; font-weight: 500; }
+.workspace-account-trigger > .sifit-icon { font-size: 15px; color: #92a18d; }
+.workspace-account-trigger[aria-expanded="true"] > .sifit-icon { transform: rotate(180deg); }
+.workspace-account-options { position: absolute; inset: calc(100% + 8px) 0 auto auto; display: grid; gap: 3px; width: 190px; padding: 6px; border: 1px solid #e6eae8; border-radius: 12px; background: #fff; box-shadow: 0 10px 28px #25392f20; }
+.workspace-account-options > button { display: flex; align-items: center; gap: 9px; min-height: 42px; padding: 8px 10px; border-radius: 7px; text-align: left; white-space: nowrap; }
+.workspace-account-options > button:hover, .workspace-account-options > button[aria-current="page"] { color: #12664c; background: #f3f7f3; }
+.workspace-account-options .workspace-account-signout { border-top: 1px solid #edf0ed; color: #a64c40; }
+.workspace-account-options .workspace-account-signout:hover { color: #a64c40; background: #fbf2ef; }
+.workspace-account-options .sifit-icon { font-size: 17px; }
+.workspace-account-avatar { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 50%; background: #e6eee0; color: #58714b; font-weight: 600; flex-shrink: 0; }
+.workspace-account-trigger:hover, .workspace-account-trigger[aria-expanded="true"] { color: #12664c; background: #f3f7f3; }
+@media (max-width: 1250px) { .workspace-account-trigger > .workspace-account-name { display: none; } }

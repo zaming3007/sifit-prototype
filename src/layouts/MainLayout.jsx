@@ -76,7 +76,7 @@ export default function MainLayout() {
       case 'seller': return <SellerStudio tab={sellerTab} setTab={setSellerTab} />;
       case 'sell': return <SellPage />;
       case 'sell-guide': return <CleanOutGuide />;
-      case 'admin': return <AdminHub tab={adminTab} setTab={setAdminTab} onBusyChange={setAdminBusy} />;
+      case 'admin': return <AdminHub tab={adminTab} onBusyChange={setAdminBusy} />;
       case 'auth': return <AuthPage />;
       case 'notifications': return <NotificationsPage />;
       case 'wishlist': return <WishlistPage />;

@@ -1,4 +1,76 @@
-.verification-panel { display: grid; gap: 20px; min-width: 0; margin-top: 26px; padding-top: 24px; border-top: 1px solid #e5ebe0; }
+.seller-bank-form, .seller-verification-form { display: grid; gap: 12px; justify-items: start; }
+.seller-bank-fields, .seller-verification-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 10px 16px;
+  width: 100%;
+}
+.seller-verification-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.seller-verification-fields > :last-child { grid-column: 1 / -1; }
+.seller-studio .seller-verification-fields textarea.input-field { min-height: 68px; }
+.seller-bank-form .input-field, .seller-verification-form .input-field { width: 100%; }
+.seller-bank-form .seller-primary-button, .verification-panel :is(.seller-primary-button, .seller-secondary-button) { min-height: 36px; padding: 7px 13px; font-size: 12px; }
+.seller-payout-hint { margin: 0; color: #5f7062; font-size: .85rem; }
+.verification-panel { min-width: 0; border: 1px solid #dfe7da; border-radius: 18px; background: #fff; }
+.verification-panel > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  font-weight: 650;
+  color: #31553a;
+  list-style: none;
+}
+.verification-panel > summary::-webkit-details-marker { display: none; }
+.seller-verification-title, .seller-verification-toolbar { display: flex; align-items: center; gap: 8px; }
+.seller-verification-title svg, .seller-verification-chevron { width: 18px; height: 18px; flex-shrink: 0; }
+.verification-panel[open] > summary .seller-verification-chevron { transform: rotate(180deg); }
+.seller-verification-chevron { grid-column: 3; }
+.seller-verification-status, .verification-photo-status { padding: 3px 8px; border-radius: 999px; background: #eef2eb; color: #48634e; font-size: .72rem; line-height: 1.4; }
+.seller-verification-status:is([data-status='PENDING'], [data-status='REJECTED']) { background: #f8f0dd; color: #795b24; }
+.seller-verification-status[data-status='VERIFIED'], .verification-photo-status[data-saved='true'] { background: #e6f2e6; color: #276342; }
+.seller-verification-body { display: grid; gap: 12px; padding: 14px 18px 18px; border-top: 1px solid #edf1eb; }
+.seller-verification-toolbar { justify-content: space-between; flex-wrap: wrap; }
+.seller-verification-step { display: grid; gap: 8px; padding: 12px; border: 1px solid #e6ebdf; border-radius: 12px; background: #fafbf8; }
+.seller-verification-step > summary { cursor: pointer; font-size: .875rem; font-weight: 600; color: #31553a; }
+.seller-verification-step:not([open]):is(details) { display: block; }
+.seller-verification-step[open] > :nth-child(2) { margin-top: 4px; }
+.seller-verification-notice, .seller-verification-warning { padding: 7px 10px; border-radius: 8px; background: #eaf4e9; color: #28593d; }
+.seller-verification-warning { background: #fff3db; color: #775225; }
+.verification-photos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.verification-photo { display: grid; gap: 8px; align-content: start; padding: 12px; min-width: 0; border: 1px solid #e4eade; border-radius: 12px; background: #fff; }
+.verification-photo-heading, .verification-photo-actions { display: flex; gap: 6px 10px; align-items: center; flex-wrap: wrap; }
+.verification-photo-heading { justify-content: space-between; }
+.verification-photo-heading h4 { margin: 0; color: #31483a; font-size: .88rem; font-weight: 650; }
+.verification-photo > p { margin: 0; color: #57695b; }
+.verification-photo-placeholder, .verification-photo > .verification-photo-preview {
+  display: grid;
+  place-items: center;
+  place-content: center;
+  gap: 3px;
+  min-height: 120px;
+  min-width: 0;
+  padding: 8px;
+  color: #4a6653;
+  background: #f2f5ef;
+  border: 1px dashed #d4dfcf;
+  border-radius: 9px;
+  font-size: .78rem;
+}
+.verification-photo-placeholder svg { width: 24px; height: 24px; }
+.verification-photo > .verification-photo-preview { cursor: zoom-in; }
+.verification-photo-preview img { display: block; width: min(100%, 200px); height: 92px; object-fit: contain; }
+.verification-photo-preview span { display: inline-flex; align-items: center; gap: 4px; }
+.verification-photo-preview span svg { width: 14px; height: 14px; }
+.verification-photo-actions label { cursor: pointer; }
+.verification-photo-actions label[aria-disabled='true'] { cursor: default; opacity: .55; }
+.verification-photo-input:focus-visible + label { outline: 2px solid #356745; outline-offset: 2px; }
+.verification-photo .verification-photo-error { color: #9b2626; }
+.verification-photo-viewer .ops-dialog { width: min(720px, calc(100% - 24px)); }
+.verification-photo-viewer img { display: block; width: 100%; max-height: 72vh; object-fit: contain; border-radius: 8px; }
+.seller-verification-confirm { display: grid; gap: 8px; justify-items: start; }
 .verification-panel h2 { font-size: 17px; font-weight: 600; color: #31553a; }
 .verification-panel h3 { font-size: 14px; font-weight: 600; }
 .verification-panel p { font-size: 12px; line-height: 1.85; overflow-wrap: anywhere; }
@@ -10,20 +82,9 @@
 .verification-panel input[type='checkbox'] { flex: 0 0 16px; margin-top: 4px; }
 .verification-details .ops-actions { align-items: flex-start; }
 @media (max-width: 700px) {
-  .seller-shell:has(.verification-panel) { --seller-sidebar-width: 64px; }
-  .seller-shell:has(.verification-panel) .seller-nav-label,
-  .seller-shell:has(.verification-panel) .seller-nav-caption,
-  .seller-shell:has(.verification-panel) .seller-active-dot,
-  .seller-shell:has(.verification-panel) .seller-sidebar-shop > div,
-  .seller-shell:has(.verification-panel) .seller-brand > span:not(.seller-brand-mark) { display: none; }
-  .seller-shell:has(.verification-panel) .seller-brand { min-height: 74px; margin-inline: 8px; align-items: center; }
-  .seller-shell:has(.verification-panel) .seller-brand img { width: 46px; height: auto; }
-  .seller-shell:has(.verification-panel) .seller-sidebar-scroll,
-  .seller-shell:has(.verification-panel) .seller-sidebar-bottom { padding-inline: 8px; }
-  .seller-shell:has(.verification-panel) .seller-navigation > button { justify-content: center; padding-inline: 8px; }
-  .seller-shell:has(.verification-panel) .seller-sidebar-shop { padding: 5px 0; justify-content: center; }
-  .seller-shell:has(.verification-panel) .seller-collapse-button,
-  .seller-shell:has(.verification-panel) .seller-signout { justify-content: center; padding-inline: 0; }
+  .seller-bank-fields, .seller-verification-fields, .verification-photos { grid-template-columns: minmax(0, 1fr); }
+  .verification-panel > summary, .seller-verification-body { padding-inline: 12px; }
+  .seller-verification-status { max-width: 78px; text-align: center; }
   .seller-shell:has(.verification-panel) .seller-workspace-content { padding: 22px 12px; }
   .seller-shell:has(.verification-panel) .seller-topbar { padding-inline: 12px; gap: 8px; }
   .seller-shell:has(.verification-panel) .seller-breadcrumb > span,

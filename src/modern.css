@@ -649,7 +649,7 @@ input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color:
 .seller-secondary-button { color: #586b61; border-color: var(--ui-line); border-radius: 12px; }
 .seller-stat-card, .seller-dashboard-panel { border-color: var(--ui-line); border-radius: 18px; background: white; box-shadow: 0 3px 18px rgba(17, 30, 25, 0.03); }
 .seller-stat-card.seller-stat-featured { background: #006c49; border-color: #006c49; color: white; }
-.seller-sidebar-shop, .seller-shop-avatar, .seller-topbar-avatar { background: var(--ui-soft); color: #1e5a3c; border-color: #d2ebd9; }
+.workspace-account-avatar { background: var(--ui-soft); color: #1e5a3c; border-color: #d2ebd9; }
 
 .admin-shell {
   --admin-green: #006c49;
@@ -657,7 +657,7 @@ input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color:
   background: var(--ui-bg);
   color: var(--ui-ink);
 }
-.admin-sidebar, .admin-topbar, .admin-sidebar-footer { background: white; border-color: var(--ui-line); }
+.admin-sidebar, .admin-topbar { background: white; border-color: var(--ui-line); }
 .admin-workspace { background: var(--ui-bg); }
 .admin-nav-group > button { min-height: 43px; border-radius: 12px; color: #586b61; }
 .admin-nav-group > button[aria-current='page'],
@@ -671,7 +671,7 @@ input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color:
 .admin-metric dt, .admin-metric p { color: var(--ui-muted); }
 .admin-metric.is-featured { background: #006c49; border-color: #006c49; color: white; }
 .admin-metric.is-featured dt, .admin-metric.is-featured p { color: #d6f2e4; }
-.admin-metric-icon, .admin-user, .admin-avatar { background: var(--ui-soft); color: #1e5a3c; border-color: #d2ebd9; }
+.admin-metric-icon { background: var(--ui-soft); color: #1e5a3c; border-color: #d2ebd9; }
 .admin-breadcrumb strong, .admin-section-heading h2 { color: var(--ui-ink); }
 
 /* Responsive tweaks */

@@ -52,7 +52,7 @@ export const sellingCopy = {
   storageError: ['Your browser could not save the draft. Please keep a copy of your details.', 'Trình duyệt chưa lưu được bản nháp. Bạn hãy giữ một bản sao thông tin đã nhập.'], closePanel: ['Close', 'Đóng'],
   theCompany: ['The Company', 'Về Sifit'], blog: ['Blog', 'Blog'], resaleReport: ['Resale Report', 'Báo cáo thời trang resale'], ourImpact: ['Our Impact', 'Tác động của Sifit'],
   careers: ['Careers', 'Tuyển dụng'], resaleService: ['Resale-as-a-Service', 'Dịch vụ bán lại'], newsroom: ['Newsroom', 'Tin tức'], investors: ['Investors', 'Nhà đầu tư'],
-  returnPolicy: ['Return Policy', 'Chính sách đổi trả'], reviews: ['Reviews', 'Đánh giá'], shopDepartments: ['Shop Departments', 'Danh mục mua sắm'],
+  reviews: ['Reviews', 'Đánh giá'], shopDepartments: ['Shop Departments', 'Danh mục mua sắm'],
   kids: ['Kids', 'Trẻ em'], juniors: ['Juniors', 'Thời trang trẻ'], maternity: ['Maternity', 'Thời trang bầu'], plus: ['Plus', 'Ngoại cỡ'], handbags: ['Handbags', 'Túi xách'],
   topBrands: ['Top Brands', 'Thương hiệu nổi bật'], allBrands: ['Shop All Brands', 'Xem mọi thương hiệu'], discoverFooter: ['Discover', 'Khám phá'], rescues: ['Rescues', 'Đồ đẹp chờ chủ mới'],
   sizeGuide: ['Size Guide', 'Hướng dẫn kích thước'], sifitInsider: ['Sifit Insider', 'Góc Sifit'], giftCards: ['Gift Cards', 'Thẻ quà tặng'], discountCodes: ['Discount Codes', 'Mã ưu đãi'], sitemap: ['Sitemap', 'Sơ đồ website'],

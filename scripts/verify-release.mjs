@@ -20,8 +20,7 @@ try {
   await page.goto('http://127.0.0.1:5198');
   await expect(page.getByRole('note')).toContainText('Chưa mở thanh toán');
   await expect.poll(() => page.locator('.modern-hero-visual img').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
-  await page.locator('footer button').filter({ hasText: /đổi trả|trả hàng/i }).click();
-  await expect(page.locator('.info-page')).toContainText('Không gửi hàng hoặc chuyển tiền');
+  await expect(page.locator('footer button').filter({ hasText: /đổi trả|trả hàng/i })).toHaveCount(0);
   expect(requests.some(url => url.includes('localhost:5000'))).toBe(false);
   expect(requests.some(url => url.includes('/api/v1/'))).toBe(true);
   expect(errors).toEqual([]);
@@ -30,7 +29,7 @@ try {
   expect(requests.some(url => /\.wasm|\.tflite|vision_bundle/.test(url))).toBe(false);
   let size = 0;
   for (const file of files) { const item = await stat(`dist/${file}`); if (item.isFile()) { size += item.size; expect(item.size).toBeLessThan(25 * 1024 * 1024); } }
-  console.info(`PASS release bundle: demo notice, hero image, return policy, production API, lazy background assets, no runtime errors, ${size} bytes`);
+  console.info(`PASS release bundle: demo notice, hero image, production API, lazy background assets, no runtime errors, ${size} bytes`);
 } finally {
   await browser?.close();
   await new Promise(resolve => server.httpServer.close(resolve));

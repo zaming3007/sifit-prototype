@@ -16,7 +16,6 @@ import * as productService from '../services/productService';
 import { getApiErrorMessage } from '../utils/errorHandler';
 import OfferCard from '../components/OfferCard';
 import RefundDetails from '../components/RefundDetails';
-import DisputeCaseDetails from '../components/DisputeCaseDetails';
 import PaymentExceptionDetails from '../components/PaymentExceptionDetails';
 import SellerVerificationDetails from '../components/SellerVerificationDetails';
 
@@ -29,7 +28,7 @@ export default function ResourcePage() {
   const { type, id } = resourceTarget;
   const reload = useCallback(async () => {
     if (!/^[a-fA-F0-9]{24}$/.test(id || '')) throw new Error('Đường dẫn không hợp lệ.');
-    const paths = { REFUND: `/refunds/${id}`, OFFER: `/offers/${id}`, ORDER: `/orders/${id}`, DISPUTE: `/disputes/${id}`, SHIPMENT: `/shipments/${id}`, PAYMENT: `/payments/${id}`, REVIEW: `/account/reviews/${id}`, PAYOUT: `/${user.role === 'admin' ? 'admin' : 'seller'}/payouts/${id}`, USER: `/admin/users/${id}` };
+    const paths = { REFUND: `/refunds/${id}`, OFFER: `/offers/${id}`, ORDER: `/orders/${id}`, SHIPMENT: `/shipments/${id}`, PAYMENT: `/payments/${id}`, REVIEW: `/account/reviews/${id}`, PAYOUT: `/${user.role === 'admin' ? 'admin' : 'seller'}/payouts/${id}`, USER: `/admin/users/${id}` };
     if (type === 'VERIFICATION') return api.get(`/seller-verifications/${id}`);
     if (type === 'CONVERSATION') { await fetchChats(); setActiveChatId(id); setCurrentView('chat'); return; }
     if (type === 'PRODUCT') {
@@ -51,7 +50,7 @@ export default function ResourcePage() {
   const refresh = async () => { setLoadError(''); setRecord(await reload()); };
   const order = record?.order && normalizeOrder(record.order);
   const review = record?.review;
-  return <div className="ops-page"><div className="ops-toolbar"><h1>Chi tiết {({ VERIFICATION: 'hồ sơ xác minh', REFUND: 'khoản hoàn tiền', OFFER: 'đề nghị giá', ORDER: 'đơn hàng', DISPUTE: 'khiếu nại', SHIPMENT: 'vận chuyển', PAYMENT: 'thanh toán', REVIEW: 'đánh giá', PAYOUT: 'chi trả', PRODUCT: 'sản phẩm', CONVERSATION: 'hội thoại', USER: 'tài khoản' })[type] || 'thông báo'}</h1><button disabled={busy || loading} onClick={() => run(refresh)}>Làm mới chi tiết</button><button onClick={() => setCurrentView('notifications')}>Về thông báo</button></div><Feedback busy={busy || loading} error={error || loadError} />
+  return <div className="ops-page"><div className="ops-toolbar"><h1>Chi tiết {({ VERIFICATION: 'hồ sơ xác minh', REFUND: 'khoản hoàn tiền', OFFER: 'đề nghị giá', ORDER: 'đơn hàng', SHIPMENT: 'vận chuyển', PAYMENT: 'thanh toán', REVIEW: 'đánh giá', PAYOUT: 'chi trả', PRODUCT: 'sản phẩm', CONVERSATION: 'hội thoại', USER: 'tài khoản' })[type] || 'thông báo'}</h1><button disabled={busy || loading} onClick={() => run(refresh)}>Làm mới chi tiết</button><button onClick={() => setCurrentView('notifications')}>Về thông báo</button></div><Feedback busy={busy || loading} error={error || loadError} />
     {order && (idOf(order.buyer) === user._id ? <OrderCard key={order._id} order={order} onChange={refresh} /> : <section className="ops-card"><Facts entries={[[ 'Mã đơn', idOf(order) ], ['Trạng thái', <Status key="status" value={order.orderStatus} />], ['Thanh toán', <Status key="status" value={order.paymentStatus} />], ['Tổng tiền', money(order.totalAmount)]]} />{order.items.map((item, index) => <p key={index}>{item.title} · {money(item.price)}</p>)}<OrderDetails order={order} now={Date.now()} /></section>)}
     {record?.shipment && <section className="ops-card"><ShipmentDetails shipment={record.shipment} /><button onClick={() => openResource('ORDER', idOf(record.shipment.orderId))}>Xem đơn hàng</button></section>}
     {record?.offer && <OfferCard offer={record.offer} onChange={() => run(refresh)} showHistory />}
@@ -60,7 +59,6 @@ export default function ResourcePage() {
     {record?.payout && <section className="ops-card"><PayoutDetails payout={record.payout} openResource={openResource} /></section>}
     {record?.user && <section className="ops-card"><Facts entries={[[ 'Họ tên', record.user.fullName ], ['Email', record.user.email], ['Vai trò', record.user.role], ['Trạng thái', record.user.status], ['Ngày tạo', date(record.user.createdAt)], ['Ngày cập nhật', date(record.user.updatedAt)]]} /></section>}
     {record?.payment && <section className="ops-card"><Facts entries={[[ 'Mã giao dịch', idOf(record.payment) ], ['Giá trị', money(record.payment.amount)], ['Trạng thái', <Status key="status" value={record.payment.status} />], ['Đã yêu cầu hoàn', money(record.payment.refundedAmount || 0)], ['Nhà cung cấp', record.payment.provider], ['Ngày tạo', date(record.payment.createdAt)]]} />{record.payment.provider === 'simulator' && <p className="ops-note">Thanh toán đang ở chế độ mô phỏng.</p>}</section>}
-    {record?.dispute && <DisputeCaseDetails key={idOf(record.dispute)} dispute={record.dispute} onChange={refresh} />}
     {record?.verification && <SellerVerificationDetails key={idOf(record.verification)} verificationId={idOf(record.verification)} onChange={refresh} />}
     {record?.payment?.provider === 'payos' && (record.payment.requiresReview || record.payment.exceptionReviewState && record.payment.exceptionReviewState !== 'NONE') && <PaymentExceptionDetails key={idOf(record.payment)} paymentId={idOf(record.payment)} onChange={refresh} />}
     {review && <section className="ops-card"><h2>{review.rating}/5 sao · {review.title}</h2><Facts entries={[[ 'Người đánh giá', review.buyerId?.fullName || shortId(review.buyerId) ], ['Trạng thái', <Status key="status" value={review.status} />], ['Nội dung', review.comment], ['Ngày tạo', date(review.createdAt)], ['Phản hồi shop', review.sellerReply?.text], ['Lý do kiểm duyệt', review.moderation?.reason]]} /><div className="ops-images">{review.images?.map((image, i) => <a key={i} href={image.url} target="_blank" rel="noreferrer"><img src={image.url} alt={`Ảnh đánh giá ${i + 1}`} /></a>)}</div>{review.orderId && <button onClick={() => openResource('ORDER', idOf(review.orderId))}>Xem đơn hàng liên quan</button>}</section>}

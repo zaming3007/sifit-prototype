@@ -2,8 +2,8 @@ import { API_ENDPOINTS } from '../constants/apiEndpoints';
 import apiClient from './apiClient';
 const changed = () => window.dispatchEvent(new Event('sifit:notifications'));
 
-export async function listNotifications(params = {}) {
-  const response = await apiClient.get(API_ENDPOINTS.notifications.root, { params });
+export async function listNotifications(params = {}, signal) {
+  const response = await apiClient.get(API_ENDPOINTS.notifications.root, { params, signal });
   return {
     items: response.data?.data?.items || [],
     pagination: response.data?.data?.pagination,

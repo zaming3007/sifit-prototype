@@ -22,8 +22,8 @@ Optional `VITE_SOCKET_URL` overrides the Socket.IO origin. Otherwise it uses the
 - `AppContext`: public catalogue, authentication, buyer orders/cart/wishlist, conversations and realtime messages.
 - Seller Studio: own drafts (including rejected/pending), multipart image upload/removal, submit for admin moderation, seller orders, shipping quotes/shipments, shop profile, verification requests, earnings and payout history.
 - Checkout: the backend checks out the whole cart and splits it by seller. Remove unwanted items explicitly; checkout never silently removes unselected items. Totals, commissions and payment status come from the server. Idempotency keys survive retries in the current mounted form.
-- Buyer account: persistent address book, payment attempts, cancellation, shipment tracking, verified-delivery receipt confirmation, reviews per order item, disputes and password changes.
-- Admin: live dashboard, user suspension/reactivation, product moderation, orders, message report resolution, shop verification and dispute review/resolution.
+- Buyer account: persistent address book, payment attempts, cancellation, shipment tracking, verified-delivery receipt confirmation, reviews per order item and password changes.
+- Admin: live dashboard, user suspension/reactivation, product moderation, orders, message report resolution, shop verification and financial reconciliation.
 - Wishlist and notification screens use persistent server data; notification preferences and read/archive actions use REST.
 - Chat uses REST history and persistence plus Socket.IO events. Reconnect reloads history, older messages use cursor pagination, and failed sends retain the input/idempotency key. Message reports use the message-report API.
 
@@ -49,9 +49,8 @@ Seller images require configured Cloudinary credentials during normal developmen
 
 Buyer orders show the saved recipient/address, the reservation/payment deadline and the post-delivery protection deadline in Vietnam time (UTC+7). Expired reservations disable payment in the UI. The backend now automatically reconciles payments and cancels eligible unpaid expired orders, releasing reserved inventory; notification delivery also runs periodically. Ambiguous PayOS receipts stay reserved for review. See `C:/Sifit-backend/BACKGROUND_JOBS.md` for defaults and operational checks.
 
-Paid orders in PAID/PROCESSING/SHIPPED state can open an ITEM_NOT_RECEIVED case before verified delivery. Other reasons require an active post-delivery protection window. Unpaid, cancelled, refunded and expired post-delivery cases are rejected, and an active case disables a duplicate submission. Opening a case only requests admin review; it never automatically refunds payment.
 
-Completed verified purchases support per-product review creation/editing/removal, up to five JPEG/PNG/WebP images (5 MB each), and one shop rating per order. Edit deadlines come from backend REVIEW_EDIT_WINDOW_DAYS. Deleted reviews cannot be edited or recreated. Image uploads require Cloudinary; a failed image upload preserves the saved review text for retry. Buyer-order responses batch their review/case metadata so each order card does not fetch the entire review history separately.
+Completed verified purchases support per-product review creation/editing/removal, up to five JPEG/PNG/WebP images (5 MB each), and one shop rating per order. Edit deadlines come from backend REVIEW_EDIT_WINDOW_DAYS. Deleted reviews cannot be edited or recreated. Image uploads require Cloudinary; a failed image upload preserves the saved review text for retry. Buyer-order responses batch their review metadata so each order card does not fetch the entire review history separately.
 
 ## Verification
 

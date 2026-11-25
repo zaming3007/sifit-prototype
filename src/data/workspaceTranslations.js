@@ -80,7 +80,7 @@ export const workspaceTranslations = {
   '✅ Không có báo cáo nào đang chờ xử lý.': '✅ No pending reports.', 'Quản Lý Người Dùng (': 'User management (',
   'Vai trò': 'Role', 'chờ xử lý': 'pending', 'Không có báo cáo nào!': 'No reports!', 'Báo cáo bởi:': 'Reported by:',
   'Khóa': 'Block', 'Mở khóa': 'Unblock', 'Đã khóa': 'Blocked', 'Hoạt động': 'Active', 'Xóa Sản Phẩm': 'Remove listing',
-  'Khóa Người Bán': 'Block seller', 'Bỏ Qua': 'Dismiss', 'đang bán': 'active', 'đã bán': 'sold', 'bị báo cáo': 'reported',
+  'Khóa Người Bán': 'Block seller', 'Bỏ Qua': 'Dismiss', 'đang bán': 'active', 'đã bán': 'sold', 'đã mua': 'sold', 'bị báo cáo': 'reported',
   'Tháng': 'Month', 'ngày': 'days', 'Tên người nhận': 'Recipient name', 'Điện thoại': 'Phone', 'Sản Phẩm Đã Đăng (': 'Published listings (',
   'Thông tin giao hàng': 'Shipping details', 'Người nhận:': 'Recipient:', 'SĐT:': 'Phone:', 'Địa chỉ:': 'Address:',
   '🎉 Hàng Chính Hãng': '🎉 Authentic pieces', 'Nội dung lừa đảo': 'Fraudulent content', 'Hàng cấm / Vi phạm': 'Prohibited items',
