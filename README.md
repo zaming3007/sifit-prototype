@@ -37,6 +37,13 @@ Structured bargaining uses **Mặc Cả** on product details and **Đề nghị 
 
 Payments support PayOS QR through the backend, signature-verified webhooks, persistent bank receipts and server reconciliation. Sellers book shipping externally, save tracking details and confirm handover. Buyers confirm receipt; admins explicitly complete orders and approve payouts after protection/verification checks. Payouts use bank transfers recorded by admins with transaction references; approval alone never marks a real payout paid. Simulator providers remain isolated in tests. See `C:/Sifit-backend/PAYOS_SETUP.md`. There is no COD/VNPAY/Momo integration.
 
+For `sifit.id.vn`, deploy this repository's `main` branch on Cloudflare Pages with
+`VITE_DEMO_MODE=false`, `VITE_API_BASE_URL=https://api.sifit.id.vn/api/v1` and
+`VITE_SOCKET_URL=https://api.sifit.id.vn`, then rebuild. Render separately needs
+PayOS credentials, a registered HTTPS webhook and `PAYMENTS_ENABLED=true`.
+See [the production payment setup](https://github.com/hoandse184495/Sifit-backend/blob/main/deploy/PAYOS_PRODUCTION.md).
+Local `.env.production` files are ignored by Git and do not update hosting dashboards.
+
 Personal profiles support editing name and phone, previewing/uploading/replacing/removing an avatar, and syncing the saved details to account navigation for buyers, sellers and admins. Email and role remain read-only. Avatar uploads accept JPEG, PNG or WebP up to 5 MB and use the backend Cloudinary configuration. Run `node scripts/verify-profile.mjs` for isolated API/browser coverage (disposable database, simulated image storage).
 
 Product reports are available from product details. Users select a reason, describe the issue and view their report history, including after a listing is hidden. Admins use **Báo cáo sản phẩm** to filter, inspect snapshots, resolve reports or warn/block/unblock reporting privileges. Limits are enforced in the backend: one pending report per account/product, 3 in 10 minutes and 10 in 24 hours. Run `node scripts/verify-product-reports.mjs` for the isolated browser flow with real API, notifications and database transactions. See `C:/Sifit-backend/PRODUCT_REPORTS.md`.

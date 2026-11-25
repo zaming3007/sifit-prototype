@@ -70,7 +70,7 @@ try {
   console.log('PASS seller-booked shipment, handover, buyer confirmation and explicit admin completion');
   await sell.getByRole('button', { name: 'Chi trả', exact: true }).click();
   for (const [label, value] of [['Tên ngân hàng', 'Fixture Bank'], ['Mã BIN ngân hàng (6 số)', '970422'], ['Số tài khoản nhận tiền', '12345678'], ['Tên chủ tài khoản', 'SELLER PAYOS']]) await sell.getByLabel(label, { exact: true }).fill(value);
-  await sell.getByRole('button', { name: 'Lưu tài khoản nhận tiền', exact: true }).click(); await expect(sell.getByRole('status')).toContainText('Đã lưu tài khoản');
+  await sell.getByRole('button', { name: 'Lưu tài khoản nhận tiền', exact: true }).click(); await expect(sell.getByRole('status').filter({ hasText: 'Đã lưu tài khoản nhận tiền.' })).toBeVisible();
   // A legacy VERIFIED profile flag no longer grants manual payout eligibility.
   // Prepare the disposable seller through the actual private-review services;
   // the dedicated verification browser suite covers these forms end to end.
